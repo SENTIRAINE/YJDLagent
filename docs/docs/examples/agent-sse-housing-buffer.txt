@@ -1,0 +1,27 @@
+id: 22222222-2222-4222-8222-222222222222:1
+event: run.started
+data: {"schemaVersion":"1.1","runId":"22222222-2222-4222-8222-222222222222","messageId":"22222222-2222-4222-8222-322222222222","sequence":1,"traceId":"trace-housing-buffer","timestamp":"2026-07-29T08:00:00Z","payload":{"status":"RUNNING"}}
+
+id: 22222222-2222-4222-8222-222222222222:2
+event: route.selected
+data: {"schemaVersion":"1.1","runId":"22222222-2222-4222-8222-222222222222","messageId":"22222222-2222-4222-8222-322222222222","sequence":2,"traceId":"trace-housing-buffer","timestamp":"2026-07-29T08:00:01Z","payload":{"intent":"MAP_QUERY"}}
+
+id: 22222222-2222-4222-8222-222222222222:3
+event: tool.started
+data: {"schemaVersion":"1.1","runId":"22222222-2222-4222-8222-222222222222","messageId":"22222222-2222-4222-8222-322222222222","sequence":3,"traceId":"trace-housing-buffer","timestamp":"2026-07-29T08:00:02Z","payload":{"toolCallId":"22222222-2222-4222-8222-422222222222","toolName":"searchHousingCandidates"}}
+
+id: 22222222-2222-4222-8222-222222222222:4
+event: tool.completed
+data: {"schemaVersion":"1.1","runId":"22222222-2222-4222-8222-222222222222","messageId":"22222222-2222-4222-8222-322222222222","sequence":4,"traceId":"trace-housing-buffer","timestamp":"2026-07-29T08:00:03Z","payload":{"toolCallId":"22222222-2222-4222-8222-422222222222","toolName":"searchHousingCandidates","status":"SUCCEEDED","durationMs":486}}
+
+id: 22222222-2222-4222-8222-222222222222:5
+event: map.result
+data: {"schemaVersion":"1.1","runId":"22222222-2222-4222-8222-222222222222","messageId":"22222222-2222-4222-8222-322222222222","sequence":5,"traceId":"trace-housing-buffer","timestamp":"2026-07-29T08:00:04Z","payload":{"queryId":"query-housing-buffer-1","toolCallIds":["22222222-2222-4222-8222-422222222222"],"mode":"replace","querySummary":"返回高步行指数道路、100 米缓冲区及命中小区","appliedFilters":[{"field":"WS","operator":"PERCENTILE_GTE","value":75,"unit":"percentile"}],"resultSets":[{"toolCallId":"22222222-2222-4222-8222-422222222222","role":"HOUSING_CANDIDATES","layerId":2,"layerName":"zhongshan_1","geometryType":"point","spatialReference":{"wkid":4326},"total":1,"returned":1,"exceededTransferLimit":false,"objectIdField":"OBJECTID","features":[{"id":"2:381","attributes":{"OBJECTID":381,"name":"示例小区","address":"示例地址","adname":"中山区","房价":11800,"归一化总分":84.2,"conveniencePercentile":86.0,"nearbyRoadWsPercentile":81.0,"recommendationScore":83.5},"geometry":{"x":121.65,"y":38.92,"spatialReference":{"wkid":4326}}}]},{"toolCallId":"22222222-2222-4222-8222-422222222222","role":"CONTRIBUTING_ROADS","layerId":3,"layerName":"ZhongShan","geometryType":"polyline","spatialReference":{"wkid":4326},"total":1,"returned":1,"exceededTransferLimit":false,"objectIdField":"OBJECTID_12","features":[{"id":"3:120","attributes":{"OBJECTID_12":120,"name":"示例道路","WS":80.1},"geometry":{"paths":[[[121.64,38.91],[121.66,38.93]]],"spatialReference":{"wkid":4326}}}]}],"overlays":[{"overlayId":"buf-01","kind":"ROAD_BUFFER","geometryType":"polygon","spatialReference":{"wkid":4326},"sourceRoadIds":["3:120"],"attributes":{"bufferMeters":100,"sourceRoadCount":1,"sourceRoadIdsTruncated":false},"geometry":{"rings":[[[121.639,38.909],[121.661,38.909],[121.661,38.931],[121.639,38.909]]],"spatialReference":{"wkid":4326}}}],"display":{"fitBounds":true,"paddingPx":48,"maxZoom":17,"layerOrder":["ROAD_BUFFER","CONTRIBUTING_ROADS","HOUSING_CANDIDATES"]},"warnings":["DEFAULT_BUFFER_APPLIED"]}}
+
+id: 22222222-2222-4222-8222-222222222222:6
+event: answer.delta
+data: {"schemaVersion":"1.1","runId":"22222222-2222-4222-8222-222222222222","messageId":"22222222-2222-4222-8222-322222222222","sequence":6,"traceId":"trace-housing-buffer","timestamp":"2026-07-29T08:00:05Z","payload":{"content":"已找到 1 个位于高步行指数道路 100 米缓冲区内的小区。"}}
+
+id: 22222222-2222-4222-8222-222222222222:7
+event: run.completed
+data: {"schemaVersion":"1.1","runId":"22222222-2222-4222-8222-222222222222","messageId":"22222222-2222-4222-8222-322222222222","sequence":7,"traceId":"trace-housing-buffer","timestamp":"2026-07-29T08:00:06Z","payload":{"status":"SUCCEEDED","answer":"已找到 1 个位于高步行指数道路 100 米缓冲区内的小区。","citations":[],"warnings":["DEFAULT_BUFFER_APPLIED"]}}

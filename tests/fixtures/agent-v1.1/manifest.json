@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "2026-07-29.1",
+  "housingPolicyVersion": "housing-search-policy-2026-07-29.1",
+  "geoSceneSchemaSha256": "cfdc97ba1e272a96602823280e137094ba2d4708cbcf5a7a2cbe3c04ca443c71",
+  "spatialIndexVersion": null,
+  "source": "deterministic-contract",
+  "generatedAt": null,
+  "files": {
+    "catalog": "../../../docs/docs/examples/agent-tool-catalog-2026-07-29.1.json",
+    "toolFixtures": "tool-fixtures.json",
+    "agentSseFixtures": "agent-sse-fixtures.json",
+    "liveToolFixtures": "live-tool-fixtures.json",
+    "liveAgentSseFixtures": "live-agent-sse-fixtures.json",
+    "performanceBaseline": "performance-baseline.json"
+  },
+  "regenerationRequiredWhen": [
+    "catalogVersion",
+    "housingPolicyVersion",
+    "geoSceneSchemaSha256",
+    "spatialIndexVersion"
+  ]
+}

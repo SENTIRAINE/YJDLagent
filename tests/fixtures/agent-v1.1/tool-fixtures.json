@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "2026-07-29.1",
+  "housingPolicyVersion": "housing-search-policy-2026-07-29.1",
+  "spatialIndexVersion": null,
+  "source": "deterministic-contract",
+  "generatedAt": null,
+  "cases": [
+    {
+      "id": "A01",
+      "action": "agent-run",
+      "query": "帮我挑一套房价12000以内，便利度和周边道路步行指数高一点的房子",
+      "toolName": "searchHousingCandidates",
+      "arguments": {
+        "mode": "RANK",
+        "districts": [],
+        "hardFilters": {"priceMax": 12000},
+        "preferences": {
+          "price": {"enabled": false, "level": "PREFER_LOW", "weight": 0},
+          "convenience": {"enabled": true, "level": "PREFER_HIGH"},
+          "roadWalkability": {"enabled": true, "level": "PREFER_HIGH"}
+        },
+        "roadCriteria": {},
+        "spatial": {"relation": "WITHIN_ROAD_BUFFER"},
+        "display": {"includeRoads": true, "includeBuffers": true},
+        "limit": 20
+      }
+    },
+    {
+      "id": "A02",
+      "action": "agent-run",
+      "query": "不限制行政区，帮我挑便利度高一点的房子",
+      "toolName": "searchHousingCandidates",
+      "arguments": {
+        "mode": "RANK",
+        "districts": [],
+        "hardFilters": {},
+        "preferences": {
+          "price": {"enabled": false, "level": "PREFER_LOW", "weight": 0},
+          "convenience": {"enabled": true, "level": "PREFER_HIGH", "weight": 1},
+          "roadWalkability": {"enabled": false, "level": "PREFER_HIGH", "weight": 0}
+        },
+        "roadCriteria": {},
+        "spatial": {"relation": "WITHIN_ROAD_BUFFER"},
+        "display": {"includeRoads": false, "includeBuffers": false},
+        "limit": 20
+      }
+    },
+    {
+      "id": "A03",
+      "action": "agent-run",
+      "query": "显示步行指数高的道路附近的小区",
+      "toolName": "searchHousingCandidates",
+      "arguments": {
+        "mode": "BUFFER_FILTER",
+        "districts": [],
+        "hardFilters": {},
+        "preferences": {
+          "price": {"enabled": false, "level": "PREFER_LOW", "weight": 0},
+          "convenience": {"enabled": false, "level": "PREFER_HIGH", "weight": 0},
+          "roadWalkability": {"enabled": true, "level": "HIGH", "weight": 1}
+        },
+        "roadCriteria": {},
+        "spatial": {"relation": "WITHIN_ROAD_BUFFER"},
+        "display": {"includeRoads": true, "includeBuffers": true},
+        "limit": 20
+      }
+    },
+    {
+      "id": "A04",
+      "action": "agent-run",
+      "query": "帮我挑便利度和道路步行指数都高一点的房子，便利度权重70%，道路步行权重30%",
+      "toolName": "searchHousingCandidates",
+      "arguments": {
+        "mode": "RANK",
+        "districts": [],
+        "hardFilters": {},
+        "preferences": {
+          "price": {"enabled": false, "level": "PREFER_LOW", "weight": 0},
+          "convenience": {"enabled": true, "level": "PREFER_HIGH", "weight": 0.7},
+          "roadWalkability": {"enabled": true, "level": "PREFER_HIGH", "weight": 0.3}
+        },
+        "roadCriteria": {},
+        "spatial": {"relation": "WITHIN_ROAD_BUFFER"},
+        "display": {"includeRoads": true, "includeBuffers": true},
+        "limit": 20
+      }
+    },
+    {
+      "id": "A05",
+      "action": "agent-run",
+      "query": "显示步行指数很高的道路附近的小区",
+      "toolName": "searchHousingCandidates",
+      "arguments": {
+        "mode": "BUFFER_FILTER",
+        "districts": [],
+        "hardFilters": {},
+        "preferences": {
+          "price": {"enabled": false, "level": "PREFER_LOW", "weight": 0},
+          "convenience": {"enabled": false, "level": "PREFER_HIGH", "weight": 0},
+          "roadWalkability": {"enabled": true, "level": "VERY_HIGH", "weight": 1}
+        },
+        "roadCriteria": {},
+        "spatial": {"relation": "WITHIN_ROAD_BUFFER"},
+        "display": {"includeRoads": true, "includeBuffers": true},
+        "limit": 20
+      }
+    },
+    {
+      "id": "A06",
+      "action": "agent-run",
+      "query": "帮我找价格尽量低的房子",
+      "toolName": "searchHousingCandidates",
+      "arguments": {
+        "mode": "RANK",
+        "districts": [],
+        "hardFilters": {},
+        "preferences": {
+          "price": {"enabled": true, "level": "PREFER_LOW", "weight": 1},
+          "convenience": {"enabled": false, "level": "PREFER_HIGH", "weight": 0},
+          "roadWalkability": {"enabled": false, "level": "PREFER_HIGH", "weight": 0}
+        },
+        "roadCriteria": {},
+        "spatial": {"relation": "WITHIN_ROAD_BUFFER"},
+        "display": {"includeRoads": false, "includeBuffers": false},
+        "limit": 20
+      }
+    },
+    {
+      "id": "A07",
+      "action": "agent-run",
+      "query": "显示步行指数高的道路10000米附近的小区",
+      "toolName": null,
+      "arguments": null
+    },
+    {
+      "id": "A08",
+      "action": "agent-run",
+      "query": "显示步行指数高的道路附近房价1以内的小区",
+      "toolName": "searchHousingCandidates",
+      "arguments": {
+        "mode": "BUFFER_FILTER",
+        "districts": [],
+        "hardFilters": {"priceMax": 1},
+        "preferences": {
+          "price": {"enabled": false, "level": "PREFER_LOW", "weight": 0},
+          "convenience": {"enabled": false, "level": "PREFER_HIGH", "weight": 0},
+          "roadWalkability": {"enabled": true, "level": "HIGH", "weight": 1}
+        },
+        "roadCriteria": {},
+        "spatial": {"relation": "WITHIN_ROAD_BUFFER"},
+        "display": {"includeRoads": true, "includeBuffers": true},
+        "limit": 20
+      }
+    },
+    {
+      "id": "A09",
+      "action": "agent-idempotency",
+      "query": "帮我挑一套房价12000以内，便利度和周边道路步行指数高一点的房子",
+      "fixtureRef": "A01"
+    },
+    {
+      "id": "A10",
+      "action": "spring-tool-conflict",
+      "fixtureRef": "A01",
+      "changedArguments": {"limit": 19},
+      "expectedErrorCode": "TOOL_CALL_CONFLICT"
+    },
+    {
+      "id": "A11",
+      "action": "agent-run",
+      "query": "用新步行代替道路WS帮我挑房",
+      "toolName": null,
+      "arguments": null
+    }
+  ]
+}

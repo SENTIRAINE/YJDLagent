@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "2026-07-29.1",
+  "housingPolicyVersion": "housing-search-policy-2026-07-29.1",
+  "spatialIndexVersion": null,
+  "source": "deterministic-contract",
+  "generatedAt": null,
+  "cases": [
+    {"id": "A01", "structure": ["run.started", "route.selected", "tool.started", "tool.completed", "map.result", "answer.delta+", "run.completed"], "terminal": "run.completed"},
+    {"id": "A02", "structure": ["run.started", "route.selected", "tool.started", "tool.completed", "map.result", "answer.delta+", "run.completed"], "terminal": "run.completed"},
+    {"id": "A03", "structure": ["run.started", "route.selected", "tool.started", "tool.completed", "map.result", "answer.delta+", "run.completed"], "terminal": "run.completed", "roadPercentile": 75},
+    {"id": "A04", "structure": ["run.started", "route.selected", "tool.started", "tool.completed", "map.result", "answer.delta+", "run.completed"], "terminal": "run.completed"},
+    {"id": "A05", "structure": ["run.started", "route.selected", "tool.started", "tool.completed", "map.result", "answer.delta+", "run.completed"], "terminal": "run.completed", "roadPercentile": 90},
+    {"id": "A06", "structure": ["run.started", "route.selected", "tool.started", "tool.completed", "map.result", "answer.delta+", "run.completed"], "terminal": "run.completed"},
+    {"id": "A07", "structure": ["run.started", "route.selected", "run.failed"], "terminal": "run.failed", "errorCode": "INVALID_BUFFER_DISTANCE"},
+    {"id": "A08", "structure": ["run.started", "route.selected", "tool.started", "tool.completed", "map.result", "answer.delta+", "run.completed"], "terminal": "run.completed", "requiredWarning": "NO_HOUSING_IN_BUFFER", "requiredLayers": ["ROAD_BUFFER", "CONTRIBUTING_ROADS"]},
+    {"id": "A09", "fixtureRef": "A01", "terminal": "run.completed", "sameRunId": true, "sameToolCallIds": true},
+    {"id": "A10", "terminal": null, "errorCode": "TOOL_CALL_CONFLICT"},
+    {"id": "A11", "structure": ["run.started", "route.selected", "run.failed"], "terminal": "run.failed", "errorCode": "INVALID_HOUSING_SEARCH_ARGUMENT"}
+  ]
+}

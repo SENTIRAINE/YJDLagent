@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "source": "requires-controlled-live-smoke",
+  "sampleCount": 0,
+  "p50Ms": null,
+  "p75Ms": null,
+  "p90Ms": null,
+  "p95Ms": null,
+  "phaseP95Ms": null,
+  "capturedAt": null
+}

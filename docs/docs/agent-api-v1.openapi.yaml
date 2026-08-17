@@ -1,0 +1,1563 @@
+openapi: 3.1.0
+info:
+  title: Silver Residence Agent Integration API
+  version: 1.1.0
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+  description: >-
+    Shared contract for the browser-facing Spring Boot Agent Gateway,
+    LangGraph runs and RAG, and Spring Boot internal Agent Tools.
+servers:
+  - url: /
+    description: Same-origin Spring Boot gateway and Agent Tool service
+tags:
+  - name: Assistant Gateway
+    description: Browser-facing, session-authenticated Agent run endpoints.
+  - name: LangGraph Runs
+    description: Internal LangGraph run lifecycle and streaming endpoints.
+  - name: LangGraph RAG
+    description: Internal tenant-authorized RAG retrieval endpoints.
+  - name: Agent Tools
+    description: Internal Spring Boot tools exposed only to LangGraph.
+x-sse-event-schemas:
+  run.started: {$ref: '#/components/schemas/RunStartedPayload'}
+  route.selected: {$ref: '#/components/schemas/RouteSelectedPayload'}
+  retrieval.completed: {$ref: '#/components/schemas/RetrievalCompletedPayload'}
+  tool.started: {$ref: '#/components/schemas/ToolStartedPayload'}
+  tool.completed: {$ref: '#/components/schemas/ToolCompletedPayload'}
+  map.result: {$ref: '#/components/schemas/MapResultPayload'}
+  citation.added: {$ref: '#/components/schemas/Citation'}
+  answer.delta: {$ref: '#/components/schemas/AnswerDeltaPayload'}
+  run.completed: {$ref: '#/components/schemas/RunCompletedPayload'}
+  run.failed: {$ref: '#/components/schemas/RunFailedPayload'}
+  run.cancelled: {$ref: '#/components/schemas/RunCancelledPayload'}
+  preflight.failed: {$ref: '#/components/schemas/PreflightFailureEnvelope'}
+x-development-runtime-policy:
+  maxRunDurationMs: 180000
+  geoSceneReadTimeoutMs: 90000
+  geoSceneCountTimeoutMs: 10000
+  agentToolTimeoutMs: 125000
+  eventRetentionMs: 86400000
+  heartbeatIntervalMs: 15000
+  springMvcAsyncTimeoutMs: 210000
+  retentionStartsAt: terminal-event
+x-housing-search-error-semantics:
+  INVALID_HOUSING_SEARCH_ARGUMENT: {httpStatus: 400, retryable: false}
+  INVALID_BUFFER_DISTANCE: {httpStatus: 400, retryable: false}
+  METRIC_POLICY_NOT_FOUND: {httpStatus: 422, retryable: false}
+  SPATIAL_RESULT_TOO_LARGE: {httpStatus: 422, retryable: false}
+  METRIC_STATISTICS_UNAVAILABLE: {httpStatus: 503, retryable: true}
+  DATA_VERSION_MISMATCH: {httpStatus: 503, retryable: true}
+  SPATIAL_QUERY_FAILED: {httpStatus: 503, retryable: true}
+paths:
+  /healthz:
+    get:
+      tags: [System]
+      summary: Liveness probe
+      operationId: getHealth
+      responses:
+        '200':
+          description: Process is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: {type: string, const: UP}
+                required: [status]
+                additionalProperties: false
+  /readyz:
+    get:
+      tags: [System]
+      summary: Readiness probe with live Tool health and runtime policy
+      operationId: getReadiness
+      responses:
+        '200':
+          description: Agent and housing Tool are ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Agent, Catalog, housing snapshot, or required configuration is not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessFailureResponse'
+  /api/assistant/runs/stream:
+    post:
+      tags: [Assistant Gateway]
+      summary: Create a browser-facing streaming Agent run
+      operationId: streamAssistantRun
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/BrowserTraceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssistantRunRequest'
+      responses:
+        '200':
+          description: Named SSE event stream
+          headers:
+            X-Trace-Id:
+              schema: {type: string}
+          content:
+            text/event-stream:
+              schema: {type: string}
+              x-event-data-schema:
+                $ref: '#/components/schemas/SseEnvelope'
+              examples:
+                hybrid:
+                  externalValue: ./examples/agent-sse-housing-buffer.txt
+        '400':
+          $ref: '#/components/responses/SseFailure'
+        '401':
+          $ref: '#/components/responses/SseFailure'
+        '503':
+          $ref: '#/components/responses/SseFailure'
+  /api/assistant/runs/{runId}/cancel:
+    post:
+      tags: [Assistant Gateway]
+      summary: Cancel a browser-owned Agent run
+      operationId: cancelAssistantRun
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/RunIdPath'
+        - $ref: '#/components/parameters/BrowserTraceId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: {type: string, maxLength: 128}
+              additionalProperties: false
+      responses:
+        '200':
+          description: Current cancelled or terminal run status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunStatusResponse'
+        '401':
+          $ref: '#/components/responses/JsonFailure'
+        '503':
+          $ref: '#/components/responses/JsonFailure'
+  /api/assistant/runs/{runId}/events:
+    get:
+      tags: [Assistant Gateway]
+      summary: Reattach to a browser-owned Agent run and replay later events
+      operationId: replayAssistantRunEvents
+      x-implementation-status: implemented
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/RunIdPath'
+        - $ref: '#/components/parameters/AfterSequence'
+        - $ref: '#/components/parameters/BrowserTraceId'
+      responses:
+        '200':
+          description: Events with sequence greater than afterSequence, followed by live events
+          content:
+            text/event-stream:
+              schema: {type: string}
+              x-event-data-schema:
+                $ref: '#/components/schemas/SseEnvelope'
+        '401':
+          $ref: '#/components/responses/SseFailure'
+        '404':
+          $ref: '#/components/responses/SseFailure'
+        '410':
+          $ref: '#/components/responses/SseFailure'
+  /api/assistant/citations/{citationId}:
+    get:
+      tags: [Assistant Gateway]
+      summary: Resolve a run-scoped citation through Spring Boot authorization
+      operationId: getAssistantCitation
+      x-implementation-status: planned
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: citationId
+          in: path
+          required: true
+          schema: {type: string, maxLength: 128}
+        - $ref: '#/components/parameters/BrowserTraceId'
+      responses:
+        '200':
+          description: Authorized citation content or redirect-safe representation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitationResourceResponse'
+        '401':
+          $ref: '#/components/responses/JsonFailure'
+        '404':
+          $ref: '#/components/responses/JsonFailure'
+  /api/v1/runs:
+    post:
+      tags: [LangGraph Runs]
+      summary: Create a non-streaming LangGraph run
+      operationId: createLangGraphRun
+      servers:
+        - url: '{langGraphBaseUrl}'
+          description: Internal LangGraph service
+          variables:
+            langGraphBaseUrl:
+              default: http://127.0.0.1:8000
+      security:
+        - serviceBearer: []
+      parameters:
+        - $ref: '#/components/parameters/InternalTraceId'
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LangGraphRunRequest'
+      responses:
+        '202':
+          description: Run accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunStatusResponse'
+        '400':
+          $ref: '#/components/responses/JsonFailure'
+        '401':
+          $ref: '#/components/responses/JsonFailure'
+  /api/v1/runs/stream:
+    post:
+      tags: [LangGraph Runs]
+      summary: Create a streaming LangGraph run
+      operationId: streamLangGraphRun
+      servers:
+        - url: '{langGraphBaseUrl}'
+          description: Internal LangGraph service
+          variables:
+            langGraphBaseUrl:
+              default: http://127.0.0.1:8000
+      security:
+        - serviceBearer: []
+      parameters:
+        - $ref: '#/components/parameters/InternalTraceId'
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LangGraphRunRequest'
+      responses:
+        '200':
+          description: Versioned named SSE stream
+          content:
+            text/event-stream:
+              schema: {type: string}
+              x-event-data-schema:
+                $ref: '#/components/schemas/SseEnvelope'
+              examples:
+                hybrid:
+                  externalValue: ./examples/agent-sse-housing-buffer.txt
+        '400':
+          $ref: '#/components/responses/JsonFailure'
+        '401':
+          $ref: '#/components/responses/JsonFailure'
+  /api/v1/runs/{runId}:
+    get:
+      tags: [LangGraph Runs]
+      summary: Get a LangGraph run status
+      operationId: getLangGraphRun
+      servers:
+        - url: '{langGraphBaseUrl}'
+          description: Internal LangGraph service
+          variables:
+            langGraphBaseUrl:
+              default: http://127.0.0.1:8000
+      security:
+        - serviceBearer: []
+      parameters:
+        - $ref: '#/components/parameters/RunIdPath'
+        - $ref: '#/components/parameters/InternalTraceId'
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Current run state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunStatusResponse'
+        '404':
+          $ref: '#/components/responses/JsonFailure'
+  /api/v1/runs/{runId}/events:
+    get:
+      tags: [LangGraph Runs]
+      summary: Replay persisted events and continue the live stream
+      operationId: replayLangGraphRunEvents
+      x-implementation-status: required-for-production
+      servers:
+        - url: '{langGraphBaseUrl}'
+          description: Internal LangGraph service
+          variables:
+            langGraphBaseUrl:
+              default: http://127.0.0.1:8000
+      security:
+        - serviceBearer: []
+      parameters:
+        - $ref: '#/components/parameters/RunIdPath'
+        - $ref: '#/components/parameters/AfterSequence'
+        - $ref: '#/components/parameters/InternalTraceId'
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Events with sequence greater than afterSequence, followed by live events
+          content:
+            text/event-stream:
+              schema: {type: string}
+              x-event-data-schema:
+                $ref: '#/components/schemas/SseEnvelope'
+        '404':
+          $ref: '#/components/responses/JsonFailure'
+        '410':
+          $ref: '#/components/responses/JsonFailure'
+  /api/v1/runs/{runId}/diagnostics:
+    get:
+      tags: [LangGraph Runs]
+      summary: Get internal Tool, orchestration and SSE metrics for a LangGraph run
+      description: >-
+        Internal release-diagnostics endpoint. Tool arguments are exposed only to the
+        authenticated service identity and are intentionally not added to public SSE events.
+      operationId: getLangGraphRunDiagnostics
+      servers:
+        - url: '{langGraphBaseUrl}'
+          description: Internal LangGraph service
+          variables:
+            langGraphBaseUrl:
+              default: http://127.0.0.1:8000
+      security:
+        - serviceBearer: []
+      parameters:
+        - $ref: '#/components/parameters/RunIdPath'
+        - $ref: '#/components/parameters/InternalTraceId'
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Auditable metrics for the tenant-owned run
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunDiagnosticsResponse'
+        '404':
+          $ref: '#/components/responses/JsonFailure'
+  /api/v1/runs/{runId}/cancel:
+    post:
+      tags: [LangGraph Runs]
+      summary: Idempotently cancel a LangGraph run
+      operationId: cancelLangGraphRun
+      servers:
+        - url: '{langGraphBaseUrl}'
+          description: Internal LangGraph service
+          variables:
+            langGraphBaseUrl:
+              default: http://127.0.0.1:8000
+      security:
+        - serviceBearer: []
+      parameters:
+        - $ref: '#/components/parameters/RunIdPath'
+        - $ref: '#/components/parameters/InternalTraceId'
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: {type: string, maxLength: 128}
+              required: [reason]
+              additionalProperties: false
+      responses:
+        '200':
+          description: Cancelled or existing terminal state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunStatusResponse'
+        '404':
+          $ref: '#/components/responses/JsonFailure'
+  /api/v1/rag/search:
+    post:
+      tags: [LangGraph RAG]
+      summary: Search tenant-authorized RAG documents
+      operationId: searchRag
+      servers:
+        - url: '{langGraphBaseUrl}'
+          description: Internal LangGraph service
+          variables:
+            langGraphBaseUrl:
+              default: http://127.0.0.1:8000
+      security:
+        - serviceBearer: []
+      parameters:
+        - $ref: '#/components/parameters/InternalTraceId'
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RagSearchRequest'
+      responses:
+        '200':
+          description: Grounding documents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagSearchResponse'
+        '403':
+          $ref: '#/components/responses/JsonFailure'
+  /internal/agent-tools/catalog:
+    get:
+      tags: [Agent Tools]
+      summary: Get the authoritative Agent Tool catalog
+      operationId: getAgentToolCatalog
+      security:
+        - serviceBearer: []
+      parameters:
+        - $ref: '#/components/parameters/InternalTraceId'
+      responses:
+        '200':
+          description: Versioned JSON Schema tool catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolCatalogResponse'
+        '401':
+          $ref: '#/components/responses/JsonFailure'
+        '503':
+          $ref: '#/components/responses/JsonFailure'
+  /internal/agent-tools/tools/{toolName}/invoke:
+    post:
+      tags: [Agent Tools]
+      summary: Invoke a catalog-declared Agent Tool
+      operationId: invokeAgentTool
+      security:
+        - serviceBearer: []
+      parameters:
+        - name: toolName
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [queryMapFeatures, queryMapPoints, queryMapLines, searchHousingCandidates]
+        - $ref: '#/components/parameters/InternalTraceId'
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/RunIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToolInvokeRequest'
+      responses:
+        '200':
+          description: Current or terminal execution state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolExecutionResponse'
+        '400':
+          $ref: '#/components/responses/JsonFailure'
+        '401':
+          $ref: '#/components/responses/JsonFailure'
+        '409':
+          $ref: '#/components/responses/JsonFailure'
+        '422':
+          $ref: '#/components/responses/JsonFailure'
+        '503':
+          $ref: '#/components/responses/JsonFailure'
+  /internal/agent-tools/executions/{toolCallId}:
+    get:
+      tags: [Agent Tools]
+      summary: Get a Tool execution after timeout or retry
+      operationId: getAgentToolExecution
+      security:
+        - serviceBearer: []
+      parameters:
+        - name: toolCallId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: '#/components/parameters/InternalTraceId'
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/RunIdHeader'
+      responses:
+        '200':
+          description: Current execution state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolExecutionResponse'
+        '404':
+          $ref: '#/components/responses/JsonFailure'
+  /internal/agent-tools/health:
+    get:
+      tags: [Agent Tools]
+      summary: Get Tool service and dependency health
+      operationId: getAgentToolHealth
+      security:
+        - serviceBearer: []
+      parameters:
+        - $ref: '#/components/parameters/InternalTraceId'
+      responses:
+        '200':
+          description: Health and catalog version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractSuccess'
+        '401':
+          $ref: '#/components/responses/JsonFailure'
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+    serviceBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth2 access token
+  parameters:
+    BrowserTraceId:
+      name: X-Trace-Id
+      in: header
+      required: false
+      schema: {type: string, maxLength: 128}
+    InternalTraceId:
+      name: X-Trace-Id
+      in: header
+      required: true
+      schema: {type: string, minLength: 1, maxLength: 128}
+    AfterSequence:
+      name: afterSequence
+      in: query
+      required: true
+      description: Replay only events whose sequence is greater than this value.
+      schema: {type: integer, minimum: 0}
+    TenantId:
+      name: X-Tenant-Id
+      in: header
+      required: true
+      schema: {type: string, maxLength: 128}
+    UserId:
+      name: X-User-Id
+      in: header
+      required: true
+      schema: {type: string, maxLength: 128}
+    RunIdHeader:
+      name: X-Run-Id
+      in: header
+      required: true
+      schema: {type: string, format: uuid}
+    RunIdPath:
+      name: runId
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+  responses:
+    JsonFailure:
+      description: Contract failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContractFailure'
+    SseFailure:
+      description: Failure before a Run is accepted; no run.started event is emitted
+      content:
+        text/event-stream:
+          schema: {type: string}
+          x-event-data-schema:
+            $ref: '#/components/schemas/PreflightFailureEnvelope'
+          example: |-
+            id: preflight:trace-id:1
+            event: preflight.failed
+            data: {"schemaVersion":"1.1","runId":null,"messageId":"7ec1cff4-6705-401c-b36a-692b5f9173a7","sequence":1,"traceId":"trace-id","timestamp":"2026-07-26T08:00:00Z","payload":{"status":"FAILED","error":{"code":"AUTHENTICATION_REQUIRED","message":"请登录后使用智能助手","retryable":false}}}
+  schemas:
+    RuntimePolicy:
+      type: object
+      properties:
+        agentMaxRunSeconds: {type: number, exclusiveMinimum: 0}
+        agentToolTimeoutSeconds: {type: number, exclusiveMinimum: 120}
+      required: [agentMaxRunSeconds, agentToolTimeoutSeconds]
+      additionalProperties: false
+    ReadinessResponse:
+      type: object
+      properties:
+        status: {type: string, const: READY}
+        model: {type: string, minLength: 1}
+        runtimePolicy:
+          $ref: '#/components/schemas/RuntimePolicy'
+        index: {type: object}
+        toolHealth: {type: object}
+        agentDatabase: {type: string, description: SQLite path or non-secret mongodb database descriptor}
+        checkpointDatabase: {type: string, description: SQLite path or non-secret mongodb database descriptor}
+      required: [status, model, runtimePolicy, index, toolHealth, agentDatabase, checkpointDatabase]
+      additionalProperties: false
+    ReadinessFailureResponse:
+      type: object
+      properties:
+        status: {type: string, const: NOT_READY}
+        reason: {type: string}
+        missing:
+          type: array
+          items: {type: string}
+        toolHealth: {type: object}
+      required: [status, reason]
+      additionalProperties: false
+    AssistantRunRequest:
+      type: object
+      properties:
+        conversationId: {type: string, format: uuid}
+        messageId: {type: string, format: uuid}
+        query: {type: string, minLength: 1, maxLength: 4000}
+        context:
+          $ref: '#/components/schemas/RunContext'
+      required: [conversationId, messageId, query, context]
+      additionalProperties: false
+    LangGraphRunRequest:
+      type: object
+      description: Internal request. Header identity is authoritative and must match user.
+      properties:
+        conversationId: {type: string, format: uuid}
+        messageId: {type: string, format: uuid}
+        query: {type: string, minLength: 1, maxLength: 4000}
+        context:
+          $ref: '#/components/schemas/RunContext'
+        user:
+          $ref: '#/components/schemas/UserContext'
+      required: [conversationId, messageId, query, context, user]
+      additionalProperties: false
+    UserContext:
+      type: object
+      properties:
+        userId: {type: string, maxLength: 128}
+        tenantId: {type: string, maxLength: 128}
+        roles:
+          type: array
+          items: {type: string, maxLength: 64}
+          maxItems: 20
+          uniqueItems: true
+      required: [userId, tenantId, roles]
+      additionalProperties: false
+    RunContext:
+      type: object
+      properties:
+        locale: {type: string, default: zh-CN, maxLength: 32}
+        map:
+          $ref: '#/components/schemas/MapContext'
+        businessObjectIds:
+          type: array
+          default: []
+          items: {type: string, maxLength: 128}
+          maxItems: 50
+          uniqueItems: true
+      required: [locale]
+      additionalProperties: false
+    MapContext:
+      type: object
+      properties:
+        visibleLayerIds:
+          type: array
+          items: {type: integer, minimum: 0, maximum: 5}
+          maxItems: 6
+          uniqueItems: true
+        zoom: {type: number, minimum: 0, maximum: 19}
+        extent:
+          oneOf:
+            - $ref: '#/components/schemas/Extent4326'
+            - type: 'null'
+      required: [visibleLayerIds]
+      additionalProperties: false
+    Extent4326:
+      type: object
+      properties:
+        xmin: {type: number}
+        ymin: {type: number}
+        xmax: {type: number}
+        ymax: {type: number}
+        wkid: {type: integer, const: 4326}
+      required: [xmin, ymin, xmax, ymax, wkid]
+      additionalProperties: false
+    SseEnvelope:
+      type: object
+      description: Event data for an accepted Run. The SSE event name selects the payload schema from x-sse-event-schemas.
+      properties:
+        schemaVersion: {type: string, const: '1.1'}
+        runId: {type: string, format: uuid}
+        messageId: {type: string, format: uuid}
+        sequence: {type: integer, minimum: 1}
+        traceId: {type: string, minLength: 1, maxLength: 128}
+        timestamp: {type: string, format: date-time}
+        payload:
+          oneOf:
+            - $ref: '#/components/schemas/RunStartedPayload'
+            - $ref: '#/components/schemas/RouteSelectedPayload'
+            - $ref: '#/components/schemas/RetrievalCompletedPayload'
+            - $ref: '#/components/schemas/ToolStartedPayload'
+            - $ref: '#/components/schemas/ToolCompletedPayload'
+            - $ref: '#/components/schemas/MapResultPayload'
+            - $ref: '#/components/schemas/Citation'
+            - $ref: '#/components/schemas/AnswerDeltaPayload'
+            - $ref: '#/components/schemas/RunCompletedPayload'
+            - $ref: '#/components/schemas/RunFailedPayload'
+            - $ref: '#/components/schemas/RunCancelledPayload'
+      required: [schemaVersion, runId, messageId, sequence, traceId, timestamp, payload]
+      additionalProperties: false
+    PreflightFailureEnvelope:
+      type: object
+      description: Failure before a Run exists. Its SSE id is preflight:{traceId}:1 and it is exempt from run.started-first.
+      properties:
+        schemaVersion: {type: string, const: '1.1'}
+        runId: {type: 'null'}
+        messageId:
+          oneOf:
+            - {type: string, format: uuid}
+            - {type: 'null'}
+        sequence: {type: integer, const: 1}
+        traceId: {type: string, minLength: 1, maxLength: 128}
+        timestamp: {type: string, format: date-time}
+        payload:
+          $ref: '#/components/schemas/RunFailedPayload'
+      required: [schemaVersion, runId, messageId, sequence, traceId, timestamp, payload]
+      additionalProperties: false
+    RunStartedPayload:
+      type: object
+      properties:
+        status: {type: string, const: RUNNING}
+      required: [status]
+      additionalProperties: false
+    RouteSelectedPayload:
+      type: object
+      properties:
+        intent: {type: string, enum: [MAP_QUERY, RAG_QA, HYBRID, CLARIFY, CONVERSATION]}
+      required: [intent]
+      additionalProperties: false
+    RetrievalCompletedPayload:
+      type: object
+      properties:
+        documents: {type: integer, minimum: 0}
+      required: [documents]
+      additionalProperties: false
+    ToolStartedPayload:
+      type: object
+      properties:
+        toolCallId: {type: string, format: uuid}
+        toolName: {type: string, enum: [queryMapFeatures, queryMapPoints, queryMapLines, searchHousingCandidates]}
+      required: [toolCallId, toolName]
+      additionalProperties: false
+    ToolCompletedPayload:
+      type: object
+      properties:
+        toolCallId: {type: string, format: uuid}
+        toolName: {type: string, enum: [queryMapFeatures, queryMapPoints, queryMapLines, searchHousingCandidates]}
+        status: {type: string, enum: [SUCCEEDED, FAILED, REJECTED]}
+        durationMs: {type: integer, minimum: 0}
+      required: [toolCallId, toolName, status, durationMs]
+      additionalProperties: false
+    AnswerDeltaPayload:
+      type: object
+      properties:
+        content: {type: string, minLength: 1}
+      required: [content]
+      additionalProperties: false
+    RunCompletedPayload:
+      type: object
+      properties:
+        status: {type: string, const: SUCCEEDED}
+        answer: {type: string}
+        citations:
+          type: array
+          items: {$ref: '#/components/schemas/Citation'}
+        warnings:
+          type: array
+          items: {type: string}
+      required: [status, answer, citations, warnings]
+      additionalProperties: false
+    RunFailedPayload:
+      type: object
+      properties:
+        status: {type: string, const: FAILED}
+        error: {$ref: '#/components/schemas/ContractError'}
+      required: [status, error]
+      additionalProperties: false
+    RunCancelledPayload:
+      type: object
+      properties:
+        status: {type: string, const: CANCELLED}
+        reason: {type: string, maxLength: 128}
+      required: [status, reason]
+      additionalProperties: false
+    MapResultPayload:
+      type: object
+      properties:
+        queryId: {type: string}
+        toolCallIds:
+          type: array
+          minItems: 1
+          maxItems: 6
+          uniqueItems: true
+          items: {type: string, format: uuid}
+        mode: {type: string, enum: [replace, append]}
+        querySummary: {type: string}
+        appliedFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppliedFilter'
+        resultSets:
+          type: array
+          maxItems: 6
+          description: Across all resultSets, the sum of features must not exceed 200.
+          items:
+            $ref: '#/components/schemas/MapResultSet'
+        overlays:
+          type: array
+          maxItems: 20
+          description: Polygon display overlays. Return an empty array when no overlays are present.
+          items:
+            $ref: '#/components/schemas/MapOverlay'
+        display:
+          $ref: '#/components/schemas/MapDisplay'
+        warnings:
+          type: array
+          items: {type: string}
+      required: [queryId, toolCallIds, mode, querySummary, appliedFilters, resultSets, overlays, display, warnings]
+      additionalProperties: false
+    AppliedFilter:
+      type: object
+      properties:
+        field: {type: string}
+        operator: {type: string}
+        value: {}
+        unit: {type: string}
+      required: [field, operator]
+      additionalProperties: false
+    MapResultSet:
+      type: object
+      description: returned must equal features.length; total must be greater than or equal to returned.
+      properties:
+        toolCallId: {type: string, format: uuid}
+        role: {type: string, enum: [PRIMARY_RESULTS, HOUSING_CANDIDATES, CONTRIBUTING_ROADS]}
+        layerId: {type: integer, minimum: 0, maximum: 5}
+        layerName: {type: string}
+        geometryType: {type: string, enum: [point, polyline]}
+        spatialReference:
+          $ref: '#/components/schemas/SpatialReference4326'
+        total: {type: integer, minimum: 0}
+        returned: {type: integer, minimum: 0, maximum: 200}
+        exceededTransferLimit: {type: boolean}
+        objectIdField: {type: string}
+        features:
+          type: array
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/MapFeature'
+      required: [toolCallId, role, layerId, layerName, geometryType, spatialReference, total, returned, exceededTransferLimit, objectIdField, features]
+      additionalProperties: false
+    MapFeature:
+      type: object
+      properties:
+        id: {type: string, pattern: '^[0-5]:.+'}
+        attributes: {type: object}
+        geometry:
+          oneOf:
+            - $ref: '#/components/schemas/EsriPoint'
+            - $ref: '#/components/schemas/EsriPolyline'
+      required: [id, attributes, geometry]
+      additionalProperties: false
+    EsriPoint:
+      type: object
+      properties:
+        x: {type: number}
+        y: {type: number}
+        spatialReference:
+          $ref: '#/components/schemas/SpatialReference4326'
+      required: [x, y, spatialReference]
+      additionalProperties: false
+    EsriPolyline:
+      type: object
+      properties:
+        paths:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 2
+            items:
+              type: array
+              prefixItems: [{type: number}, {type: number}]
+              minItems: 2
+              maxItems: 2
+        spatialReference:
+          $ref: '#/components/schemas/SpatialReference4326'
+      required: [paths, spatialReference]
+      additionalProperties: false
+    EsriPolygon:
+      type: object
+      properties:
+        rings:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 4
+            description: Closed ring; the first and last coordinate must be equal.
+            items:
+              type: array
+              prefixItems: [{type: number}, {type: number}]
+              minItems: 2
+              maxItems: 2
+        spatialReference:
+          $ref: '#/components/schemas/SpatialReference4326'
+      required: [rings, spatialReference]
+      additionalProperties: false
+    MapOverlay:
+      type: object
+      properties:
+        overlayId: {type: string, pattern: '^buf-[A-Za-z0-9._:-]+$', maxLength: 128}
+        kind: {type: string, const: ROAD_BUFFER}
+        geometryType: {type: string, const: polygon}
+        spatialReference:
+          $ref: '#/components/schemas/SpatialReference4326'
+        sourceRoadIds:
+          type: array
+          maxItems: 20
+          uniqueItems: true
+          items: {type: string, pattern: '^[3-5]:.+'}
+        attributes:
+          type: object
+          properties:
+            bufferMeters: {type: integer, minimum: 20, maximum: 2000}
+            sourceRoadCount: {type: integer, minimum: 1}
+            sourceRoadIdsTruncated: {type: boolean}
+          required: [bufferMeters, sourceRoadCount, sourceRoadIdsTruncated]
+          additionalProperties: false
+        geometry:
+          $ref: '#/components/schemas/EsriPolygon'
+      required: [overlayId, kind, geometryType, spatialReference, sourceRoadIds, attributes, geometry]
+      additionalProperties: false
+    SpatialReference4326:
+      type: object
+      properties:
+        wkid: {type: integer, const: 4326}
+      required: [wkid]
+      additionalProperties: false
+    MapDisplay:
+      type: object
+      properties:
+        fitBounds: {type: boolean}
+        paddingPx: {type: integer, minimum: 0, maximum: 200}
+        maxZoom: {type: number, minimum: 0, maximum: 19}
+        layerOrder:
+          type: array
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items: {type: string, enum: [ROAD_BUFFER, CONTRIBUTING_ROADS, HOUSING_CANDIDATES, PRIMARY_RESULTS]}
+      required: [fitBounds, paddingPx, maxZoom, layerOrder]
+      additionalProperties: false
+    Citation:
+      type: object
+      properties:
+        citationId: {type: string}
+        ordinal: {type: integer, minimum: 1}
+        documentId: {type: string}
+        documentVersion: {type: string}
+        title: {type: string}
+        contentType: {type: string}
+        sectionPath:
+          type: array
+          items: {type: string}
+        pageStart: {type: integer, minimum: 1}
+        pageEnd: {type: integer, minimum: 1}
+        chunkId: {type: string}
+        excerpt: {type: string}
+        excerptAllowed: {type: boolean}
+        score: {type: number, description: Provider-specific retrieval or reranking score; used only for ordering.}
+        source:
+          type: object
+          properties:
+            resourceRef: {type: string, minLength: 1, maxLength: 256}
+            url: {type: string, pattern: '^/api/assistant/citations/'}
+          required: [resourceRef]
+          additionalProperties: false
+        warnings:
+          type: array
+          items: {type: string}
+      required: [citationId, ordinal, documentId, documentVersion, title, contentType, sectionPath, pageStart, pageEnd, chunkId, excerpt, excerptAllowed, score, source, warnings]
+      additionalProperties: false
+    CitationResourceResponse:
+      allOf:
+        - $ref: '#/components/schemas/ContractSuccess'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                citationId: {type: string}
+                title: {type: string}
+                contentType: {type: string}
+                content: {type: string}
+              required: [citationId, title, contentType, content]
+              additionalProperties: false
+    RunStatus:
+      type: string
+      enum: [QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED]
+    RunStatusData:
+      type: object
+      properties:
+        runId: {type: string, format: uuid}
+        status:
+          $ref: '#/components/schemas/RunStatus'
+        lastSequence: {type: integer, minimum: 0}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+        completed:
+          oneOf:
+            - $ref: '#/components/schemas/RunCompletedPayload'
+            - type: 'null'
+        error:
+          oneOf:
+            - $ref: '#/components/schemas/ContractError'
+            - type: 'null'
+      required: [runId, status, lastSequence, createdAt, updatedAt, completed, error]
+      additionalProperties: false
+    RunStatusResponse:
+      allOf:
+        - $ref: '#/components/schemas/ContractSuccess'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/RunStatusData'
+    ToolCallDiagnostic:
+      type: object
+      properties:
+        toolCallId: {type: string, format: uuid}
+        toolName: {type: string, minLength: 1}
+        arguments:
+          type: object
+          description: Exact arguments submitted to Spring Tool after Agent validation.
+        argumentsHash:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+        status: {type: string, enum: [RUNNING, SUCCEEDED, FAILED, REJECTED]}
+        durationMs: {type: [integer, 'null'], minimum: 0}
+        retryCount: {type: integer, minimum: 0}
+        errorCode: {type: [string, 'null']}
+      required: [toolCallId, toolName, arguments, argumentsHash, status, durationMs, retryCount, errorCode]
+      additionalProperties: false
+    OrchestrationDiagnostic:
+      type: object
+      properties:
+        durationMs: {type: integer, minimum: 0}
+        status: {type: string, enum: [SUCCEEDED, FAILED, CANCELLED]}
+        errorCode: {type: [string, 'null']}
+      required: [durationMs, status, errorCode]
+      additionalProperties: false
+    SseStreamDiagnostic:
+      type: object
+      properties:
+        afterSequence: {type: integer, minimum: 0}
+        lastSequence: {type: integer, minimum: 0}
+        durationMs: {type: integer, minimum: 0}
+        bytesSent: {type: integer, minimum: 0}
+        status: {type: string, enum: [COMPLETED, DISCONNECTED, FAILED]}
+      required: [afterSequence, lastSequence, durationMs, bytesSent, status]
+      additionalProperties: false
+    StageDiagnostic:
+      type: object
+      description: Internal LangGraph stage trace. Metadata excludes prompts and raw user input.
+      properties:
+        stageName: {type: string, minLength: 1}
+        operation: {type: [string, 'null']}
+        status: {type: string, enum: [SUCCEEDED, FAILED]}
+        durationMs: {type: integer, minimum: 0}
+        errorCode: {type: [string, 'null']}
+        attempt: {type: integer, minimum: 1}
+        toolCallId: {type: [string, 'null'], format: uuid}
+        metadata: {type: object}
+      required: [stageName, operation, status, durationMs, errorCode, attempt, toolCallId, metadata]
+      additionalProperties: false
+    RunDiagnosticsData:
+      type: object
+      properties:
+        runId: {type: string, format: uuid}
+        messageId: {type: string, format: uuid}
+        status:
+          $ref: '#/components/schemas/RunStatus'
+        toolCalls:
+          type: array
+          items: {$ref: '#/components/schemas/ToolCallDiagnostic'}
+        orchestration:
+          oneOf:
+            - $ref: '#/components/schemas/OrchestrationDiagnostic'
+            - type: 'null'
+        sseStreams:
+          type: array
+          items: {$ref: '#/components/schemas/SseStreamDiagnostic'}
+        stages:
+          type: array
+          items: {$ref: '#/components/schemas/StageDiagnostic'}
+        decisionAudit:
+          type: array
+          items: {$ref: '#/components/schemas/StageDiagnostic'}
+        modelCalls:
+          type: array
+          items: {$ref: '#/components/schemas/StageDiagnostic'}
+      required: [runId, messageId, status, toolCalls, orchestration, sseStreams, stages, decisionAudit, modelCalls]
+      additionalProperties: false
+    RunDiagnosticsResponse:
+      allOf:
+        - $ref: '#/components/schemas/ContractSuccess'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/RunDiagnosticsData'
+    RagSearchRequest:
+      type: object
+      properties:
+        query: {type: string, minLength: 1, maxLength: 4000}
+        topK: {type: integer, minimum: 1, maximum: 20, default: 5}
+        filters:
+          type: object
+          properties:
+            documentIds:
+              type: array
+              items: {type: string}
+              maxItems: 100
+            contentTypes:
+              type: array
+              items: {type: string}
+              maxItems: 20
+          additionalProperties: false
+      required: [query, topK, filters]
+      additionalProperties: false
+    RagSearchResult:
+      type: object
+      properties:
+        content: {type: string}
+        score: {type: number, description: Provider-specific retrieval or reranking score; used only for ordering.}
+        documentId: {type: string}
+        documentVersion: {type: string}
+        title: {type: string}
+        contentType: {type: string}
+        chunkId: {type: string}
+        sectionPath:
+          type: array
+          items: {type: string}
+        pageStart: {type: integer, minimum: 1}
+        pageEnd: {type: integer, minimum: 1}
+        resourceRef: {type: string, minLength: 1, maxLength: 256}
+        warnings:
+          type: array
+          items: {type: string}
+      required: [content, score, documentId, documentVersion, title, contentType, chunkId, sectionPath, pageStart, pageEnd, resourceRef, warnings]
+      additionalProperties: false
+    RagSearchResponse:
+      allOf:
+        - $ref: '#/components/schemas/ContractSuccess'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/RagSearchResult'
+    MapFilterCondition:
+      type: object
+      properties:
+        field: {type: string, minLength: 1, maxLength: 64}
+        operator: {type: string, enum: ['=', '!=', '>', '>=', '<', '<=', in, like, isnull, isnotnull]}
+        value: {}
+      required: [field, operator]
+      additionalProperties: false
+    MapQueryArguments:
+      type: object
+      properties:
+        layerId: {type: integer, minimum: 0, maximum: 5}
+        filters:
+          type: array
+          maxItems: 20
+          items: {$ref: '#/components/schemas/MapFilterCondition'}
+        outFields:
+          type: array
+          maxItems: 50
+          uniqueItems: true
+          items: {type: string}
+        returnGeometry: {type: boolean}
+        resultRecordCount: {type: integer, minimum: 1, maximum: 200}
+        resultOffset: {type: integer, minimum: 0}
+        returnCount: {type: boolean}
+      required: [layerId, filters, returnGeometry, resultRecordCount]
+      additionalProperties: false
+    HousingSearchMode:
+      type: string
+      enum: [RANK, BUFFER_FILTER]
+    HousingHardFilters:
+      type: object
+      description: priceMin must not exceed priceMax when both are present.
+      properties:
+        priceMin: {type: number, minimum: 0}
+        priceMax: {type: number, minimum: 0}
+      additionalProperties: false
+    PricePreference:
+      type: object
+      properties:
+        enabled: {type: boolean}
+        level: {type: string, const: PREFER_LOW}
+        weight: {type: number, minimum: 0, maximum: 1}
+      required: [enabled, level, weight]
+      additionalProperties: false
+    HighPreference:
+      type: object
+      description: weight may be omitted only when the versioned backend default should be applied.
+      properties:
+        enabled: {type: boolean}
+        level: {type: string, enum: [PREFER_HIGH, HIGH, VERY_HIGH]}
+        weight: {type: number, minimum: 0, maximum: 1}
+      required: [enabled, level]
+      additionalProperties: false
+    HousingPreferences:
+      type: object
+      description: Enabled weights must sum to 1; disabled preferences must have weight 0. The default convenience/roadWalkability baseline is 0.5/0.5 with price disabled.
+      properties:
+        price: {$ref: '#/components/schemas/PricePreference'}
+        convenience: {$ref: '#/components/schemas/HighPreference'}
+        roadWalkability: {$ref: '#/components/schemas/HighPreference'}
+      required: [price, convenience, roadWalkability]
+      additionalProperties: false
+    HousingRoadCriteria:
+      type: object
+      properties:
+        wsMin: {type: number}
+        gviMin: {type: number}
+        noiMax: {type: number}
+      additionalProperties: false
+    HousingSpatialCriteria:
+      type: object
+      properties:
+        relation: {type: string, const: WITHIN_ROAD_BUFFER}
+        bufferMeters: {type: integer, minimum: 20, maximum: 2000, default: 100}
+      required: [relation]
+      additionalProperties: false
+    HousingDisplayOptions:
+      type: object
+      properties:
+        includeRoads: {type: boolean}
+        includeBuffers: {type: boolean}
+      required: [includeRoads, includeBuffers]
+      additionalProperties: false
+    HousingSearchArguments:
+      type: object
+      description: >-
+        Controlled point-line search. Convenience maps only to 归一化总分; roadWalkability maps only
+        to road WS. 新步行 is not accepted as a substitute for either metric. BUFFER_FILTER without
+        wsMin resolves HIGH/VERY_HIGH from versioned P75/P90 statistics. Conditions are never silently relaxed.
+      properties:
+        mode: {$ref: '#/components/schemas/HousingSearchMode'}
+        districts:
+          type: array
+          maxItems: 3
+          uniqueItems: true
+          description: Empty means the unified supported-region scope.
+          items: {type: string, enum: [中山区, 西岗区, 沙河口区]}
+        hardFilters: {$ref: '#/components/schemas/HousingHardFilters'}
+        preferences: {$ref: '#/components/schemas/HousingPreferences'}
+        roadCriteria: {$ref: '#/components/schemas/HousingRoadCriteria'}
+        spatial: {$ref: '#/components/schemas/HousingSpatialCriteria'}
+        display: {$ref: '#/components/schemas/HousingDisplayOptions'}
+        limit: {type: integer, minimum: 1, maximum: 50, default: 20}
+      required: [mode, districts, hardFilters, preferences, spatial, display, limit]
+      additionalProperties: false
+    HousingStatisticsScope:
+      type: object
+      properties:
+        type: {type: string, enum: [SUPPORTED_REGION, DISTRICT]}
+        districts:
+          type: array
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items: {type: string, enum: [中山区, 西岗区, 沙河口区]}
+      required: [type, districts]
+      additionalProperties: false
+    HousingResolvedCriteria:
+      type: object
+      properties:
+        priceMin: {type: [number, 'null'], minimum: 0}
+        priceMax: {type: [number, 'null'], minimum: 0}
+        bufferMeters: {type: integer, minimum: 20, maximum: 2000}
+        roadWsThreshold: {type: [number, 'null']}
+        roadWsThresholdPercentile: {type: [number, 'null'], minimum: 0, maximum: 100}
+        defaultsApplied:
+          type: array
+          uniqueItems: true
+          items: {type: string, enum: [BUFFER_METERS, PREFERENCE_WEIGHTS]}
+        relaxationApplied: {type: boolean, const: false}
+      required: [priceMin, priceMax, bufferMeters, roadWsThreshold, roadWsThresholdPercentile, defaultsApplied, relaxationApplied]
+      additionalProperties: false
+    HousingSearchSummary:
+      type: object
+      properties:
+        matchedHousingCount: {type: integer, minimum: 0}
+        returnedHousingCount: {type: integer, minimum: 0, maximum: 50}
+        matchedRoadCount: {type: integer, minimum: 0}
+        returnedRoadCount: {type: integer, minimum: 0, maximum: 50}
+      required: [matchedHousingCount, returnedHousingCount, matchedRoadCount, returnedRoadCount]
+      additionalProperties: false
+    HousingScoreWeights:
+      type: object
+      properties:
+        price: {type: number, minimum: 0, maximum: 1}
+        convenience: {type: number, minimum: 0, maximum: 1}
+        roadWalkability: {type: number, minimum: 0, maximum: 1}
+      required: [price, convenience, roadWalkability]
+      additionalProperties: false
+    HousingScores:
+      type: object
+      properties:
+        priceAffordabilityPercentile: {type: [number, 'null'], minimum: 0, maximum: 100}
+        conveniencePercentile: {type: [number, 'null'], minimum: 0, maximum: 100}
+        nearbyRoadWsRaw: {type: [number, 'null']}
+        nearbyRoadWsPercentile: {type: [number, 'null'], minimum: 0, maximum: 100}
+        recommendationScore: {type: [number, 'null'], minimum: 0, maximum: 100}
+        weights: {$ref: '#/components/schemas/HousingScoreWeights'}
+      required: [priceAffordabilityPercentile, conveniencePercentile, nearbyRoadWsRaw, nearbyRoadWsPercentile, recommendationScore, weights]
+      additionalProperties: false
+    HousingSpatialEvidence:
+      type: object
+      properties:
+        bufferMeters: {type: integer, minimum: 20, maximum: 2000}
+        nearbyRoadCount: {type: integer, minimum: 0}
+        nearestRoadDistanceMeters: {type: [number, 'null'], minimum: 0}
+        contributingRoadIds:
+          type: array
+          maxItems: 50
+          uniqueItems: true
+          items: {type: string, pattern: '^[3-5]:.+'}
+      required: [bufferMeters, nearbyRoadCount, nearestRoadDistanceMeters, contributingRoadIds]
+      additionalProperties: false
+    HousingCandidate:
+      type: object
+      properties:
+        housingId: {type: string, pattern: '^[0-2]:.+'}
+        layerId: {type: integer, minimum: 0, maximum: 2}
+        attributes: {type: object}
+        geometry: {$ref: '#/components/schemas/EsriPoint'}
+        scores: {$ref: '#/components/schemas/HousingScores'}
+        spatialEvidence: {$ref: '#/components/schemas/HousingSpatialEvidence'}
+        reasons:
+          type: array
+          items: {type: string}
+        warnings:
+          type: array
+          items: {type: string}
+      required: [housingId, layerId, attributes, geometry, scores, spatialEvidence, reasons, warnings]
+      additionalProperties: false
+    HousingRoadFeature:
+      type: object
+      properties:
+        roadId: {type: string, pattern: '^[3-5]:.+'}
+        layerId: {type: integer, minimum: 3, maximum: 5}
+        attributes: {type: object}
+        geometry: {$ref: '#/components/schemas/EsriPolyline'}
+      required: [roadId, layerId, attributes, geometry]
+      additionalProperties: false
+    HousingSearchResult:
+      type: object
+      properties:
+        policyVersion: {type: string, minLength: 1}
+        dataVersion: {type: string, minLength: 1}
+        mode: {$ref: '#/components/schemas/HousingSearchMode'}
+        statisticsScope: {$ref: '#/components/schemas/HousingStatisticsScope'}
+        resolvedCriteria: {$ref: '#/components/schemas/HousingResolvedCriteria'}
+        summary: {$ref: '#/components/schemas/HousingSearchSummary'}
+        housingCandidates:
+          type: array
+          maxItems: 50
+          items: {$ref: '#/components/schemas/HousingCandidate'}
+        roadFeatures:
+          type: array
+          maxItems: 50
+          items: {$ref: '#/components/schemas/HousingRoadFeature'}
+        bufferOverlays:
+          type: array
+          maxItems: 20
+          items: {$ref: '#/components/schemas/MapOverlay'}
+        warnings:
+          type: array
+          items: {type: string}
+      required: [policyVersion, dataVersion, mode, statisticsScope, resolvedCriteria, summary, housingCandidates, roadFeatures, bufferOverlays, warnings]
+      additionalProperties: false
+    MapToolFeature:
+      type: object
+      properties:
+        attributes: {type: object}
+        geometry:
+          oneOf:
+            - $ref: '#/components/schemas/EsriPoint'
+            - $ref: '#/components/schemas/EsriPolyline'
+            - {type: 'null'}
+      required: [attributes, geometry]
+      additionalProperties: false
+    MapToolQueryResult:
+      type: object
+      properties:
+        layerId: {type: integer, minimum: 0, maximum: 5}
+        layerName: {type: string}
+        geometryType: {type: string, enum: [point, polyline]}
+        total: {type: integer, minimum: 0}
+        exceededTransferLimit: {type: boolean}
+        features:
+          type: array
+          maxItems: 200
+          items: {$ref: '#/components/schemas/MapToolFeature'}
+      required: [layerId, layerName, geometryType, total, exceededTransferLimit, features]
+      additionalProperties: false
+    ToolDryRunResult:
+      type: object
+      properties:
+        valid: {type: boolean, const: true}
+        toolName: {type: string, enum: [queryMapFeatures, queryMapPoints, queryMapLines, searchHousingCandidates]}
+        layerId: {type: integer, minimum: 0, maximum: 5}
+        mode: {$ref: '#/components/schemas/HousingSearchMode'}
+        catalogVersion: {type: string}
+      required: [valid, toolName, catalogVersion]
+      additionalProperties: false
+    ToolInvokeRequest:
+      type: object
+      properties:
+        toolCallId: {type: string, format: uuid}
+        arguments:
+          oneOf:
+            - $ref: '#/components/schemas/MapQueryArguments'
+            - $ref: '#/components/schemas/HousingSearchArguments'
+        dryRun: {type: boolean, default: false}
+      required: [toolCallId, arguments]
+      additionalProperties: false
+    ToolExecutionStatus:
+      type: string
+      enum: [RECEIVED, RUNNING, SUCCEEDED, FAILED, REJECTED]
+    ToolExecutionData:
+      type: object
+      description: SUCCEEDED requires result; FAILED or REJECTED requires error; terminal states require completedAt.
+      properties:
+        toolCallId: {type: string, format: uuid}
+        toolName: {type: string}
+        status:
+          $ref: '#/components/schemas/ToolExecutionStatus'
+        catalogVersion: {type: string}
+        startedAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+        completedAt: {type: string, format: date-time}
+        durationMs: {type: integer, minimum: 0}
+        result:
+          oneOf:
+            - $ref: '#/components/schemas/MapToolQueryResult'
+            - $ref: '#/components/schemas/HousingSearchResult'
+            - $ref: '#/components/schemas/ToolDryRunResult'
+        error:
+          $ref: '#/components/schemas/ContractError'
+      required: [toolCallId, toolName, status, catalogVersion, startedAt, updatedAt]
+      additionalProperties: false
+      oneOf:
+        - properties:
+            status: {type: string, enum: [RECEIVED, RUNNING]}
+          required: [status]
+        - properties:
+            status: {type: string, const: SUCCEEDED}
+            result: {}
+            completedAt: {type: string, format: date-time}
+          required: [status, result, completedAt, durationMs]
+        - properties:
+            status: {type: string, enum: [FAILED, REJECTED]}
+            error: {$ref: '#/components/schemas/ContractError'}
+            completedAt: {type: string, format: date-time}
+          required: [status, error, completedAt, durationMs]
+    ToolExecutionResponse:
+      allOf:
+        - $ref: '#/components/schemas/ContractSuccess'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ToolExecutionData'
+    ToolCatalogResponse:
+      allOf:
+        - $ref: '#/components/schemas/ContractSuccess'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                version: {type: string}
+                tools:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name: {type: string}
+                      description: {type: string}
+                      sideEffect: {type: boolean, const: false}
+                      requiresConfirmation: {type: boolean, const: false}
+                      timeoutMs: {type: integer, minimum: 1}
+                      inputSchema: {type: object}
+                      outputSchema: {type: object}
+                    required: [name, description, sideEffect, requiresConfirmation, timeoutMs, inputSchema, outputSchema]
+                    additionalProperties: false
+              required: [version, tools]
+              additionalProperties: false
+    ContractSuccess:
+      type: object
+      properties:
+        success: {type: boolean, const: true}
+        data: {}
+        traceId: {type: string}
+      required: [success, data, traceId]
+      additionalProperties: false
+    ContractFailure:
+      type: object
+      properties:
+        success: {type: boolean, const: false}
+        error:
+          $ref: '#/components/schemas/ContractError'
+        traceId: {type: string}
+      required: [success, error, traceId]
+      additionalProperties: false
+    ContractError:
+      type: object
+      properties:
+        code: {type: string}
+        message: {type: string}
+        retryable: {type: boolean}
+        details:
+          oneOf:
+            - {type: object}
+            - {type: 'null'}
+      required: [code, message, retryable]
+      additionalProperties: false

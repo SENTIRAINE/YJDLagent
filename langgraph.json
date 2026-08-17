@@ -1,0 +1,9 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "dependencies": ["."],
+  "graphs": {
+    "agent": "./app/graph/export.py:agent_graph",
+    "rag": "./app/graph/export.py:graph"
+  },
+  "env": ".env"
+}

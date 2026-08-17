@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "data": [
+    {
+      "content": "步行指数综合道路连通性与设施可达性。",
+      "score": 0.91,
+      "documentId": "doc-walkability",
+      "documentVersion": "v3",
+      "title": "大连生活圈评价技术说明",
+      "contentType": "application/pdf",
+      "chunkId": "chunk-12",
+      "sectionPath": ["指标体系", "步行指数"],
+      "pageStart": 12,
+      "pageEnd": 13,
+      "resourceRef": "rag:doc-walkability:v3:chunk-12",
+      "warnings": []
+    }
+  ],
+  "traceId": "trace-rag-fixture"
+}

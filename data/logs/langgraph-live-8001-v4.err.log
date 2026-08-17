@@ -1,0 +1,7 @@
+D:\XQYproject\YJDLagent\.venv\Lib\site-packages\langgraph\checkpoint\base\__init__.py:17: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+INFO:     Started server process [35648]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+Agent Tool completed traceId=fuzzy-housing-live-e2e-v4 runId=a67a3291-3bd4-41fe-85e0-7db33240fcfd toolCallId=0340b005-e1ac-4fde-87b0-756448e36786 toolName=searchHousingCandidates durationMs=90101 status=FAILED errorCode=GEOSCENE_QUERY_TIMEOUT

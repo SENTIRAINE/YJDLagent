@@ -1,0 +1,24 @@
+{
+  "documents": [
+    {
+      "documentId": "doc-c1c4908ce5e4c55d",
+      "title": "步行指数与便利度知识库——大连市社区生活圈案例",
+      "source": "步行指数知识库.pdf",
+      "sha256": "c1c4908ce5e4c55d6e9e910e20366a4a0b7f55cb3856e73e894ab64cb3709f8a",
+      "pageCount": 12
+    }
+  ],
+  "documentCount": 1,
+  "chunkCount": 46,
+  "contentTypes": {
+    "formula": 2,
+    "narrative": 13,
+    "table": 22,
+    "warning": 9
+  },
+  "warningChunkCount": 12,
+  "embeddingProvider": "hash",
+  "embeddingDimension": 768,
+  "databasePath": "D:\\XQYproject\\YJDLagent\\data\\index\\rag.sqlite3",
+  "processedPath": "D:\\XQYproject\\YJDLagent\\data\\processed\\chunks.jsonl"
+}
