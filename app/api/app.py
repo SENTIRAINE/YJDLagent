@@ -105,6 +105,14 @@ def create_app(runtime: AgentRuntime | None = None) -> FastAPI:
     @application.exception_handler(RequestValidationError)
     async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
         trace_id = request.headers.get("X-Trace-Id") or str(uuid4())
+        errors = [
+            {
+                key: item[key]
+                for key in ("type", "loc", "msg")
+                if key in item
+            }
+            for item in exc.errors()
+        ]
         return JSONResponse(
             status_code=400,
             content={
@@ -113,11 +121,7 @@ def create_app(runtime: AgentRuntime | None = None) -> FastAPI:
                     "code": "INVALID_AGENT_REQUEST",
                     "message": "请求参数不符合 Agent 契约",
                     "retryable": False,
-                    "details": {
-                        "errors": exc.errors(
-                            include_url=False, include_context=False, include_input=False
-                        )
-                    },
+                    "details": {"errors": errors},
                 },
                 "traceId": trace_id,
             },

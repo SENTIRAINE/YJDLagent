@@ -86,7 +86,7 @@ def test_spring_point_and_line_tool_contracts() -> None:
             str(uuid4()),
             {
                 "layerId": 3,
-                "filters": [{"field": "GVI", "operator": ">=", "value": 0.4}],
+                "filters": [{"field": "绿视率原始值", "operator": ">=", "value": 0.4}],
                 "returnGeometry": True,
                 "resultRecordCount": 3,
             },

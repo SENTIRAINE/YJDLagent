@@ -27,7 +27,7 @@ from app.agent.rag_service import RagEvidenceService
 from app.agent.store import RunRecord, is_sqlite_busy_error, iso_utc
 from app.agent.store_factory import create_agent_store
 from app.agent.workflow import build_agent_graph
-from app.agent.workflow import concise_map_result_answer
+from app.agent.workflow import concise_map_result_answer, concise_rag_result_answer
 from app.agent.workflow import normalize_catalog
 from app.config import Settings
 from app.tools.spring_client import SpringToolClient, ToolCallContext
@@ -788,7 +788,7 @@ class AgentRuntime:
         if has_map_result:
             answer = concise_map_result_answer(map_result)
         else:
-            answer = "已找到相关参考资料，您可以先查看页面中的引用内容。"
+            answer = concise_rag_result_answer(aggregate.get("retrieval_results", []))
         warnings = list(dict.fromkeys(aggregate.get("warnings", []) + ["ANSWER_GENERATION_DEGRADED"]))
         aggregate["answer"] = answer
         aggregate["warnings"] = warnings

@@ -28,8 +28,11 @@ from app.agent.workflow import (
     concise_map_result_answer,
     compact_catalog,
     contextualize_followup_query,
+    deterministic_housing_search_arguments,
     explicit_buffer_meters,
+    explicit_price_min,
     explicit_price_max,
+    explicit_road_criteria,
     is_explicit_road_map_query,
     is_frozen_point_map_query,
     is_housing_search_query,
@@ -262,7 +265,7 @@ class FakeTools:
                             "reasons": ["房价满足预算"],
                             "warnings": [],
                         }],
-                        "roadFeatures": [{"roadId": "3:9", "layerId": 3, "attributes": {"name": "示例道路", "WS": 76}, "geometry": {"paths": [[[121.61, 38.90], [121.63, 38.92]]], "spatialReference": {"wkid": 4326}}}],
+                        "roadFeatures": [{"roadId": "3:9", "layerId": 3, "attributes": {"name": "示例道路", "WS归一化": 76, "绿视率原始值": 0.42, "道路噪声原始值": 55}, "geometry": {"paths": [[[121.61, 38.90], [121.63, 38.92]]], "spatialReference": {"wkid": 4326}}}],
                         "bufferOverlays": [{"overlayId": "buf-1", "kind": "ROAD_BUFFER", "geometryType": "polygon", "spatialReference": {"wkid": 4326}, "sourceRoadIds": ["3:9"], "attributes": {"bufferMeters": 100, "sourceRoadCount": 1, "sourceRoadIdsTruncated": False}, "geometry": {"rings": [[[121.60, 38.89], [121.64, 38.89], [121.64, 38.93], [121.60, 38.89]]], "spatialReference": {"wkid": 4326}}}],
                         "warnings": [],
                     },
@@ -292,7 +295,7 @@ class FakeTools:
                     "features": [
                         {
                             "attributes": (
-                                {"OBJECTID_12": 7, "name": "示例道路", "WS": 76}
+                                {"OBJECTID_12": 7, "name": "示例道路", "WS归一化": 76}
                                 if is_road
                                 else {"OBJECTID": 7, "name": "示例住宅", "房价": 18000, "归一化总分": 76.4, "覆盖度评分": 100}
                             ),
@@ -606,6 +609,75 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(query, "我只要中山区的道路")
         self.assertEqual(audit, [])
 
+    def test_other_conditions_unchanged_reuses_price_floor_and_road_preference(self) -> None:
+        query, audit = contextualize_followup_query(
+            "预算上限改成 14000 元/平方米，其他条件不变，最多返回 5 个小区。",
+            [],
+            {
+                "state": {
+                    "entityContext": {
+                        "entityType": "HOUSING",
+                        "districts": ["沙河口区"],
+                    },
+                    "queryContext": {
+                        "lastSuccessfulQuery": "在沙河口区按价格区间和道路条件筛选住宅",
+                        "hardFilters": {"priceMin": 12000, "priceMax": 15000},
+                        "preferences": {
+                            "roadWalkability": {
+                                "enabled": True,
+                                "level": "VERY_HIGH",
+                                "weight": 1,
+                            }
+                        },
+                    },
+                }
+            },
+        )
+
+        self.assertTrue(audit)
+        self.assertTrue(is_housing_search_query(query))
+        arguments = deterministic_housing_search_arguments(query)
+        self.assertIsNotNone(arguments)
+        self.assertEqual(arguments["districts"], ["沙河口区"])
+        self.assertEqual(
+            arguments["hardFilters"],
+            {"priceMin": 12000, "priceMax": 14000},
+        )
+        self.assertTrue(arguments["preferences"]["roadWalkability"]["enabled"])
+        self.assertEqual(arguments["limit"], 5)
+
+    def test_knowledge_question_does_not_inherit_housing_query_state(self) -> None:
+        conversation_state = {
+            "state": {
+                "entityContext": {
+                    "entityType": "HOUSING",
+                    "districts": ["沙河口区"],
+                },
+                "queryContext": {
+                    "lastSuccessfulQuery": "筛选沙河口区房价在 12000 到 15000 之间的住宅",
+                    "hardFilters": {"priceMin": 12000, "priceMax": 15000},
+                    "preferences": {
+                        "roadWalkability": {
+                            "enabled": True,
+                            "level": "PREFER_HIGH",
+                            "weight": 1,
+                        }
+                    },
+                },
+            }
+        }
+
+        for prompt in ("步行指数是如何计算的？", "步行指数是什么"):
+            with self.subTest(prompt=prompt):
+                query, audit = contextualize_followup_query(
+                    prompt,
+                    [],
+                    conversation_state,
+                )
+
+                self.assertEqual(query, prompt)
+                self.assertEqual(audit, [])
+
     def test_district_only_query_without_memory_does_not_guess_entity(self) -> None:
         query, audit = contextualize_followup_query("我只要中山区的", [])
 
@@ -622,6 +694,11 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(explicit_price_max("房价不高于每平方米 12000 元"), 12000)
         self.assertEqual(explicit_price_max("房价不超过每平米 12000 元"), 12000)
         self.assertEqual(explicit_price_max("每平方米房价不高于 12000 元"), 12000)
+
+    def test_price_floor_accepts_frontend_square_meter_wording(self) -> None:
+        self.assertEqual(explicit_price_min("房价不低于 12000 元/平方米"), 12000)
+        self.assertEqual(explicit_price_min("房价至少每平方米 12000 元"), 12000)
+        self.assertEqual(explicit_price_min("每平方米房价不低于 12000 元"), 12000)
 
     def test_concise_map_answer_counts_primary_point_results(self) -> None:
         answer = concise_map_result_answer(
@@ -785,7 +862,7 @@ class RuntimeTests(unittest.TestCase):
 
         explicit = normalize_housing_search_arguments(
             invented,
-            query="显示 WS 不低于 80、GVI 不低于 0.4、NOI 不高于 60 的道路附近小区",
+            query="显示 WS归一化 不低于 80、vegetation 不低于 0.4、noise 不高于 60 的道路附近小区",
         )
         self.assertEqual(
             explicit["roadCriteria"],
@@ -796,7 +873,7 @@ class RuntimeTests(unittest.TestCase):
         wrong_values["roadCriteria"] = {"wsMin": 10, "gviMin": 0.1, "noiMax": 99}
         grounded = normalize_housing_search_arguments(
             wrong_values,
-            query="显示道路步行指数不低于 75、绿视率不低于 0.35、道路噪声不高于 55 的道路附近小区",
+            query="显示道路步行指数不低于 75、绿视率原始值不低于 0.35、道路噪声原始值不高于 55 的道路附近小区",
         )
         self.assertEqual(
             grounded["roadCriteria"],
@@ -806,9 +883,34 @@ class RuntimeTests(unittest.TestCase):
         with self.assertRaises(AgentError) as inverted:
             normalize_housing_search_arguments(
                 invented,
-                query="显示 GVI 不高于 0.4 的道路附近小区",
+                query="显示 vegetation 不高于 0.4 的道路附近小区",
             )
         self.assertEqual(inverted.exception.code, "INVALID_HOUSING_SEARCH_ARGUMENT")
+
+    def test_road_criteria_use_raw_metrics_and_enforce_catalog_ranges(self) -> None:
+        self.assertEqual(
+            explicit_road_criteria(
+                "WS归一化不低于80、vegetation不低于0.4、noise不高于60"
+            ),
+            {"wsMin": 80, "gviMin": 0.4, "noiMax": 60},
+        )
+        self.assertEqual(
+            explicit_road_criteria(
+                "步行指数不低于75、绿视率原始值不低于0.35、道路噪声原始值不高于55"
+            ),
+            {"wsMin": 75, "gviMin": 0.35, "noiMax": 55},
+        )
+        self.assertEqual(explicit_road_criteria("GVI不低于1、NOI不高于2.5"), {})
+
+        for query, field in (
+            ("WS归一化不低于101", "wsMin"),
+            ("vegetation不低于1.1", "gviMin"),
+            ("noise不高于101", "noiMax"),
+        ):
+            with self.subTest(query=query), self.assertRaises(AgentError) as raised:
+                explicit_road_criteria(query)
+            self.assertEqual(raised.exception.code, "INVALID_HOUSING_SEARCH_ARGUMENT")
+            self.assertEqual(raised.exception.details["field"], field)
 
     def test_a05_very_high_buffer_filter_is_preserved(self) -> None:
         plan = housing_plan()
@@ -846,8 +948,50 @@ class RuntimeTests(unittest.TestCase):
             result,
         )
         self.assertIn(
-            {"field": "WS", "operator": "PERCENTILE_GTE", "value": 90, "unit": "percentile"},
+            {"field": "WS归一化", "operator": "PERCENTILE_GTE", "value": 90, "unit": "percentile"},
             payload["appliedFilters"],
+        )
+
+    def test_unavailable_normalized_ws_remains_null_in_map_result(self) -> None:
+        response = asyncio.run(
+            FakeTools().invoke(
+                "searchHousingCandidates",
+                "00000000-0000-0000-0000-000000000050",
+                housing_plan(),
+                object(),
+            )
+        )
+        result = response["data"]["result"]
+        result["roadFeatures"][0]["attributes"]["WS归一化"] = None
+
+        payload = build_housing_search_map_result(
+            "00000000-0000-0000-0000-000000000050",
+            result,
+        )
+        roads = next(
+            item for item in payload["resultSets"] if item["role"] == "CONTRIBUTING_ROADS"
+        )
+
+        self.assertIsNone(roads["features"][0]["attributes"]["WS归一化"])
+        self.assertEqual(roads["features"][0]["attributes"]["绿视率原始值"], 0.42)
+        self.assertEqual(roads["features"][0]["attributes"]["道路噪声原始值"], 55)
+
+    def test_road_percentile_does_not_raise_convenience_preference_level(self) -> None:
+        arguments = normalize_housing_search_arguments(
+            housing_plan(),
+            query=(
+                "筛选便利度较高的住宅，并要求位于道路步行指数达到当前区域"
+                "前 10% 的道路 140 米范围内"
+            ),
+        )
+
+        self.assertEqual(
+            arguments["preferences"]["convenience"]["level"],
+            "PREFER_HIGH",
+        )
+        self.assertEqual(
+            arguments["preferences"]["roadWalkability"]["level"],
+            "VERY_HIGH",
         )
 
     def test_a06_prefer_low_does_not_generate_price_max(self) -> None:
@@ -983,7 +1127,7 @@ class RuntimeTests(unittest.TestCase):
                 self.assertEqual(payload["overlays"][0]["kind"], "ROAD_BUFFER")
                 self.assertEqual(payload["overlays"][0]["attributes"]["bufferMeters"], 100)
                 self.assertIn(
-                    {"field": "WS", "operator": "PERCENTILE_GTE", "value": 75, "unit": "percentile"},
+                    {"field": "WS归一化", "operator": "PERCENTILE_GTE", "value": 75, "unit": "percentile"},
                     payload["appliedFilters"],
                 )
                 self.assertEqual(payload["display"]["layerOrder"], ["ROAD_BUFFER", "CONTRIBUTING_ROADS", "HOUSING_CANDIDATES"])
@@ -1116,6 +1260,65 @@ class RuntimeTests(unittest.TestCase):
 
         asyncio.run(scenario())
 
+    def test_regression_frontend_price_range_and_top_ten_percent_routes_to_housing_tool(self) -> None:
+        async def scenario() -> None:
+            with tempfile.TemporaryDirectory() as directory:
+                tools = FakeTools()
+                runtime = AgentRuntime(
+                    settings_for(Path(directory) / "agent.sqlite3"),
+                    llm=NoHousingPlannerLlm(),
+                    rag=FakeRag(),
+                    tools=tools,
+                )
+                request = LangGraphRunRequest.model_validate(
+                    request_body(
+                        "请使用现有住宅候选搜索工具，在沙河口区范围内筛选住宅，"
+                        "房价不低于 12000 元/平方米，房价不高于 15000 元/平方米，"
+                        "住宅需位于道路步行指数达到当前区域前 10%的道路 140 米范围内，"
+                        "最多返回 20 个小区，在地图上显示候选住宅、相关道路和道路缓冲范围。"
+                        "不要自行放宽条件。"
+                    )
+                )
+                run, _ = await runtime.start_run(request, "trace-top-ten-percent-regression")
+                stream = "".join(
+                    [
+                        chunk
+                        async for chunk in runtime.stream_events(
+                            run.run_id, "tenant-1", "u-1"
+                        )
+                    ]
+                )
+                await runtime.close()
+
+                self.assertEqual(tools.invoke_count, 1)
+                self.assertEqual(tools.last_call[0], "searchHousingCandidates")
+                arguments = tools.last_call[2]
+                self.assertEqual(arguments["mode"], "BUFFER_FILTER")
+                self.assertEqual(arguments["districts"], ["沙河口区"])
+                self.assertEqual(
+                    arguments["hardFilters"],
+                    {"priceMin": 12000, "priceMax": 15000},
+                )
+                self.assertEqual(
+                    arguments["preferences"]["roadWalkability"],
+                    {"enabled": True, "level": "VERY_HIGH", "weight": 1},
+                )
+                self.assertEqual(
+                    arguments["spatial"],
+                    {"relation": "WITHIN_ROAD_BUFFER", "bufferMeters": 140},
+                )
+                self.assertEqual(
+                    arguments["display"],
+                    {"includeRoads": True, "includeBuffers": True},
+                )
+                self.assertEqual(arguments["limit"], 20)
+                self.assertEqual(event_data(stream)[1]["payload"]["intent"], "MAP_QUERY")
+                self.assertIn("map.result", event_names(stream))
+                self.assertEqual(event_names(stream)[-1], "run.completed")
+                validate_openapi_events(stream)
+
+        asyncio.run(scenario())
+
     def test_missing_or_malformed_wgs84_geometry_is_a_contract_failure(self) -> None:
         call = {
             "toolCallId": "00000000-0000-0000-0000-000000000099",
@@ -1176,8 +1379,8 @@ class RuntimeTests(unittest.TestCase):
         )
 
     def test_explicit_road_threshold_is_map_query_but_cross_layer_is_not(self) -> None:
-        self.assertTrue(is_explicit_road_map_query("筛选中山区 GVI 不低于 0.4 的道路"))
-        self.assertFalse(is_explicit_road_map_query("筛选中山区 GVI 不低于 0.4 的住宅"))
+        self.assertTrue(is_explicit_road_map_query("筛选中山区 GVI 等于 1 的道路"))
+        self.assertFalse(is_explicit_road_map_query("筛选中山区 GVI 等于 1 的住宅"))
 
     def test_catalog_compact_view_preserves_frozen_district_mapping(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
@@ -1494,7 +1697,13 @@ class RuntimeTests(unittest.TestCase):
                     model_calls_before = sum(len(items) for items in llm.payloads.values())
                     tool_calls_before = tools.invoke_count
 
-                    for index, query in enumerate(("我们都说了什么，总结一下", "干得不错")):
+                    for index, query in enumerate(
+                        (
+                            "我们都说了什么，总结一下",
+                            "我们刚才都筛了哪些条件？请简单总结。",
+                            "干得不错",
+                        )
+                    ):
                         request = LangGraphRunRequest.model_validate(
                             request_body(query, conversation_id=conversation_id)
                         )
@@ -1727,6 +1936,99 @@ class RuntimeTests(unittest.TestCase):
                 self.assertTrue(completed["citations"])
                 self.assertTrue(all(item["excerpt"] == "" for item in completed["citations"]))
                 self.assertTrue(all(item["excerptAllowed"] is False for item in completed["citations"]))
+                await runtime.close()
+
+        asyncio.run(scenario())
+
+    def test_knowledge_question_after_housing_query_routes_to_rag(self) -> None:
+        async def scenario() -> None:
+            with tempfile.TemporaryDirectory() as directory:
+                settings = settings_for(Path(directory) / "agent.sqlite3")
+                tools = FakeTools()
+                runtime = AgentRuntime(
+                    settings,
+                    llm=RagRouteLlm(),
+                    rag=RagEvidenceService(settings),
+                    tools=tools,
+                )
+                conversation_id = str(uuid4())
+                first_request = LangGraphRunRequest.model_validate(
+                    request_body(
+                        "筛选沙河口区房价不低于12000且不高于15000的住宅小区",
+                        conversation_id=conversation_id,
+                    )
+                )
+                first_run, _ = await runtime.start_run(first_request, "trace-map-before-rag")
+                first_stream = "".join(
+                    [
+                        chunk
+                        async for chunk in runtime.stream_events(
+                            first_run.run_id, "tenant-1", "u-1"
+                        )
+                    ]
+                )
+                self.assertIn("map.result", event_names(first_stream))
+                self.assertEqual(tools.invoke_count, 1)
+
+                second_request = LangGraphRunRequest.model_validate(
+                    request_body(
+                        "步行指数是如何计算的？",
+                        conversation_id=conversation_id,
+                    )
+                )
+                second_run, _ = await runtime.start_run(second_request, "trace-rag-after-map")
+                second_stream = "".join(
+                    [
+                        chunk
+                        async for chunk in runtime.stream_events(
+                            second_run.run_id, "tenant-1", "u-1"
+                        )
+                    ]
+                )
+                names = event_names(second_stream)
+                completed = event_data(second_stream)[-1]["payload"]
+
+                self.assertEqual(event_data(second_stream)[1]["payload"]["intent"], "RAG_QA")
+                self.assertIn("retrieval.completed", names)
+                self.assertIn("citation.added", names)
+                self.assertNotIn("tool.started", names)
+                self.assertTrue(completed["citations"])
+                self.assertEqual(tools.invoke_count, 1)
+                validate_openapi_events(second_stream)
+                await runtime.close()
+
+        asyncio.run(scenario())
+
+    def test_rag_answer_failure_returns_source_locations(self) -> None:
+        async def scenario() -> None:
+            with tempfile.TemporaryDirectory() as directory:
+                settings = settings_for(Path(directory) / "agent.sqlite3")
+                runtime = AgentRuntime(
+                    settings,
+                    llm=AnswerFailingLlm(),
+                    rag=RagEvidenceService(settings),
+                    tools=FakeTools(),
+                )
+                request = LangGraphRunRequest.model_validate(
+                    request_body("步行指数是如何计算的？")
+                )
+                run, _ = await runtime.start_run(request, "trace-rag-answer-fallback")
+                stream = "".join(
+                    [chunk async for chunk in runtime.stream_events(run.run_id, "tenant-1", "u-1")]
+                )
+                completed = event_data(stream)[-1]["payload"]
+
+                self.assertEqual(event_names(stream)[-1], "run.completed")
+                self.assertIn("retrieval.completed", event_names(stream))
+                self.assertIn("ANSWER_GENERATION_DEGRADED", completed["warnings"])
+                self.assertTrue(completed["citations"])
+                self.assertIn("3.4 步行指数公式与评分", completed["answer"])
+                self.assertIn("第 5-6 页", completed["answer"])
+                self.assertNotEqual(
+                    completed["answer"],
+                    "已找到相关参考资料，您可以先查看页面中的引用内容。",
+                )
+                validate_openapi_events(stream)
                 await runtime.close()
 
         asyncio.run(scenario())
@@ -2082,6 +2384,7 @@ class RuntimeTests(unittest.TestCase):
                 database = Path(directory) / "agent.sqlite3"
                 settings = replace(
                     settings_for(database),
+                    agent_worker_concurrency=1,
                     agent_worker_lease_seconds=1,
                     agent_worker_poll_seconds=0.01,
                 )
@@ -2200,6 +2503,34 @@ class RuntimeTests(unittest.TestCase):
 
 
 class ApiContractTests(unittest.TestCase):
+    def test_invalid_request_returns_sanitized_contract_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = AgentRuntime(
+                settings_for(Path(directory) / "agent.sqlite3"),
+                llm=FakeLlm(),
+                rag=FakeRag(),
+                tools=FakeTools(),
+            )
+            headers = {
+                "Authorization": "Bearer langgraph-test-token",
+                "X-Trace-Id": "trace-invalid-request",
+                "X-Tenant-Id": "tenant-1",
+                "X-User-Id": "u-1",
+            }
+            body = {**request_body("test query"), "schemaVersion": "1.1"}
+            with TestClient(create_app(runtime)) as client:
+                response = client.post("/api/v1/runs/stream", headers=headers, json=body)
+
+            self.assertEqual(response.status_code, 400)
+            payload = response.json()
+            self.assertEqual(payload["error"]["code"], "INVALID_AGENT_REQUEST")
+            errors = payload["error"]["details"]["errors"]
+            self.assertEqual(errors[0]["loc"], ["body", "schemaVersion"])
+            self.assertNotIn("input", errors[0])
+            self.assertNotIn("ctx", errors[0])
+            self.assertNotIn("url", errors[0])
+            self.assertEqual(response.headers["X-Trace-Id"], "trace-invalid-request")
+
     def test_readiness_rejects_catalog_version_drift_without_replacing_cache(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             tools = FakeTools()

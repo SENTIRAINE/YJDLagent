@@ -1,14 +1,14 @@
-# Agent Contract v1.1 后续工程要求
+# Agent Contract v1.1 工程实现与交接
 
-更新时间：`2026-07-29`
+更新时间：`2026-08-21`
 
-本文面向 LangGraph/Agent 工程师。Spring Boot、前端和契约侧已完成 v1.1 实现；Agent 仓库必须按本文完成编排、事件组装和联调，不得回退到 v1.0 或自行重算空间业务结果。
+本文面向 LangGraph/Agent 工程师，记录当前已实现的 v1.1 编排规则、事件组装、回归门禁和仍需在发布环境完成的联调项。不得回退到 v1.0 或自行重算空间业务结果。项目总体状态见 [当前项目报告](../current-project-report-2026-08-21.md)。
 
 ## 1. 唯一契约来源
 
-1. 启动时读取 `GET /internal/agent-tools/catalog`，要求版本严格等于 `2026-07-29.1`。
+1. 启动时读取 `GET /internal/agent-tools/catalog`，要求版本严格等于 `2026-08-21.1`。
 2. HTTP、SSE 和 DTO 以 [agent-api-v1.openapi.yaml](./agent-api-v1.openapi.yaml) 为准。
-3. Catalog 固定样例使用 [agent-tool-catalog-2026-07-29.1.json](./examples/agent-tool-catalog-2026-07-29.1.json)。
+3. Catalog 固定样例使用 [agent-tool-catalog-2026-08-21.1.json](./examples/agent-tool-catalog-2026-08-21.1.json)。
 4. 联合查询事件以 [agent-sse-housing-buffer.txt](./examples/agent-sse-housing-buffer.txt) 为准。
 5. Catalog 版本不匹配时应阻止住宅道路联合搜索并暴露健康错误，不得继续使用旧缓存 Schema。
 
@@ -20,12 +20,14 @@
 | 价格尽量低 | `preferences.price=PREFER_LOW` | 不得猜测 `priceMax` |
 | 便利度高一点 | `preferences.convenience=PREFER_HIGH` | 只能映射 `归一化总分` |
 | 便利度必须高/很高 | `HIGH`/`VERY_HIGH` | 不得由 LLM 猜绝对阈值 |
-| 道路步行高一点 | `roadWalkability=PREFER_HIGH` | `WS` 只来自道路 3-5 层 |
-| 高/很高 WS 道路附近 | `BUFFER_FILTER` + `HIGH`/`VERY_HIGH` | 不得使用点字段 `新步行` |
+| 道路步行高一点 | `roadWalkability=PREFER_HIGH` | `WS归一化` 只来自道路 3-5 层 |
+| 高/很高 WS归一化 道路附近 | `BUFFER_FILTER` + `HIGH`/`VERY_HIGH` | 不得使用点字段 `新步行` |
+| 绿视率原始阈值 | `roadCriteria.gviMin` | 只使用 0-1 的 `vegetation`，不得使用 GVI 等级 |
+| 道路噪声原始阈值 | `roadCriteria.noiMax` | 只使用 0-100 的 `noise`，不得使用 NOI 等级 |
 | 未指定行政区 | `districts=[]` | 不得逐区排名后拼接 |
 | 未指定附近距离 | 省略 `spatial.bufferMeters` | 不得由 Agent 先写入 100 后伪装成后端默认 |
 
-`新步行`、`归一化总分`、道路 `WS` 是三个不同字段。Agent 不得互相替代，也不得在 Tool 返回后重新计算便利度、道路 WS、百分位或推荐总分。
+`新步行`、`归一化总分`、道路 `WS归一化` 是三个不同字段。GVI 仅使用 `0/1/3/5=高/较高/中等/低` 的等级语义，NOI 仅使用 `0/1.25/2.5/3.75/5=低/较低/中/较高/高` 的等级语义；物理量返回键保持为 `绿视率原始值`、`道路噪声原始值`。`WS归一化=null` 表示不可用，不得按 0 处理。Agent 不得互相替代，也不得在 Tool 返回后重新计算便利度、道路步行百分位或推荐总分。
 
 ## 3. 参数构造
 
@@ -65,7 +67,7 @@
 - Catalog 可按版本缓存，但健康检查发现版本变化后必须原子替换，不能混用两个版本。
 - 默认场景联调目标：20 个住宅结果时 Tool P95 小于 3 秒；记录 Tool、Agent 编排和 SSE 发送三个分段耗时。
 
-## 7. 必须补齐的 Agent 测试
+## 7. Agent 回归门禁
 
 - A01 房价硬过滤 + 便利度/道路默认软偏好。
 - A02 未指定行政区，使用统一支持区域百分位。
@@ -79,10 +81,28 @@
 - A11 未知指标、`新步行` 替代 WS、禁用道路偏好执行 BUFFER_FILTER 均被澄清或拒绝。
 - SSE 创建、取消、重放、单终态和 v1.1 polygon fixture 全部通过。
 
-## 8. 联调完成标准
+## 8. 发布环境联调完成标准
 
-- LangGraph 启动日志确认 Catalog `2026-07-29.1`，且无 v1.0 事件。
+- LangGraph 启动日志确认 Catalog `2026-08-21.1`，且无 v1.0 事件。
 - 真实 A01-A11 请求固化为请求、Tool 响应、SSE 三类 fixture。
 - 桌面和移动端均显示 buffer、道路、住宅三层；清除结果后三层均为空。
 - 真实 GeoScene 数据验证全域/单区 P75/P90、99.9/100/100.1 米边界、重叠道路去重和空结果。
 - 输出 P50/P95 延迟、SSE 字节数、超时重试次数及错误码分布，达到性能目标后方可发布。
+
+## 9. RAG 连续对话回归门禁
+
+知识问答必须与地图业务状态隔离：
+
+1. 先执行住宅/道路地图请求，再询问“这个指标是什么意思/如何计算”；第二轮必须为 `RAG_QA`。
+2. 第二轮不得继承上一轮 district、price、preference、Tool plan 或 map result。
+3. RAG 成功场景必须有 retrieval results 和 citation，且 Tool 调用数为 0。
+4. 模型 HTTP `429` 最多尝试 3 次，不进行无限重试。
+5. 答案模型持续失败时，完成事件必须包含可定位的文档、章节、页码和 citation，并带 `ANSWER_GENERATION_DEGRADED`。
+
+当前专项门禁：
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests\test_agent_runtime.py tests\test_llm.py -q
+```
+
+`2026-08-21` 复验结果为 `81 passed`。真实链路 Run `0a3e2d5f-2cc6-46e3-825f-607e6e08a779` 已验证 `RAG_QA`、5 条检索结果、0 Tool、2 条 citation 和 `SUCCEEDED`。真实证据只证明当次环境；发布前仍须确认当前 `/readyz` 为 `READY`。

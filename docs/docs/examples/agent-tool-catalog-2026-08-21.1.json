@@ -1,0 +1,3823 @@
+{
+  "tools": [
+    {
+      "description": "按一个地图图层和结构化筛选条件查询点或线要素。只接受目录字段和运算符，不执行任意 SQL。",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "description": "沙河口区住宅点图层 shahekou_1",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "adname",
+                          "description": "行政区"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "房价",
+                          "description": "房价"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "覆盖度评分",
+                          "description": "覆盖度评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "归一化总分",
+                          "description": "综合评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 0
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID",
+                    "Shape",
+                    "id",
+                    "name",
+                    "address",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "pname",
+                    "cityname",
+                    "adname",
+                    "大类",
+                    "中类",
+                    "小类",
+                    "餐饮密度",
+                    "风景密度",
+                    "科教密度",
+                    "购物密度",
+                    "金融密度",
+                    "公共密度",
+                    "覆盖度",
+                    "覆盖度评分",
+                    "新步行",
+                    "总原始分",
+                    "归一化总分",
+                    "房价",
+                    "交通密度"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "shahekou_1 query",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "西岗区住宅点图层 xigang_1",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "adname",
+                          "description": "行政区"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "房价",
+                          "description": "房价"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "覆盖度评分",
+                          "description": "覆盖度评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "归一化总分",
+                          "description": "综合评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 1
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID",
+                    "Shape",
+                    "id",
+                    "name",
+                    "address",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "pname",
+                    "cityname",
+                    "adname",
+                    "大类",
+                    "中类",
+                    "小类",
+                    "餐饮密度",
+                    "风景密度",
+                    "科教密度",
+                    "购物密度",
+                    "金融密度",
+                    "公共密度",
+                    "覆盖度",
+                    "覆盖度评分",
+                    "新步行",
+                    "总原始分",
+                    "归一化总分",
+                    "房价"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "xigang_1 query",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "中山区住宅点图层 zhongshan_1",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "adname",
+                          "description": "行政区"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "房价",
+                          "description": "房价"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "覆盖度评分",
+                          "description": "覆盖度评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "归一化总分",
+                          "description": "综合评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 2
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID",
+                    "Shape",
+                    "id",
+                    "name",
+                    "address",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "pname",
+                    "cityname",
+                    "adname",
+                    "大类",
+                    "中类",
+                    "小类",
+                    "餐饮密度",
+                    "风景密度",
+                    "科教密度",
+                    "购物密度",
+                    "金融密度",
+                    "公共密度",
+                    "覆盖度",
+                    "覆盖度评分",
+                    "新步行",
+                    "总原始分",
+                    "归一化总分",
+                    "房价"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "zhongshan_1 query",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "中山区道路线图层 ZhongShan",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "GVI",
+                          "description": "绿视率等级：0=高，1=较高，3=中等，5=低"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "NOI",
+                          "description": "道路噪声等级：0=低，1.25=较低，2.5=中，3.75=较高，5=高"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "WS归一化",
+                          "description": "步行指数（0-100）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "绿视率原始值",
+                          "description": "绿视率原始分（vegetation）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "道路噪声原始值",
+                          "description": "道路噪声原始分（noise）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "Shape_Length",
+                          "description": "道路长度"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "道路名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 3
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID_12",
+                    "OBJECTID",
+                    "Shape",
+                    "fclass",
+                    "name",
+                    "typecode",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "GVI",
+                    "NOI",
+                    "WS归一化",
+                    "绿视率原始值",
+                    "道路噪声原始值",
+                    "Shape_Length"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "ZhongShan query",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "西岗区道路线图层 XiGang",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "GVI",
+                          "description": "绿视率等级：0=高，1=较高，3=中等，5=低"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "NOI",
+                          "description": "道路噪声等级：0=低，1.25=较低，2.5=中，3.75=较高，5=高"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "WS归一化",
+                          "description": "步行指数（0-100）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "绿视率原始值",
+                          "description": "绿视率原始分（vegetation）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "道路噪声原始值",
+                          "description": "道路噪声原始分（noise）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "Shape_Length",
+                          "description": "道路长度"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "道路名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 4
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID_12",
+                    "Shape",
+                    "fclass",
+                    "name",
+                    "typecode",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "GVI",
+                    "NOI",
+                    "WS归一化",
+                    "绿视率原始值",
+                    "道路噪声原始值",
+                    "Shape_Length"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "XiGang query",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "沙河口区道路线图层 ShaHeKou",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "GVI",
+                          "description": "绿视率等级：0=高，1=较高，3=中等，5=低"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "NOI",
+                          "description": "道路噪声等级：0=低，1.25=较低，2.5=中，3.75=较高，5=高"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "WS归一化",
+                          "description": "步行指数（0-100）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "绿视率原始值",
+                          "description": "绿视率原始分（vegetation）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "道路噪声原始值",
+                          "description": "道路噪声原始分（noise）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "Shape_Length",
+                          "description": "道路长度"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "道路名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 5
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID_12",
+                    "Shape",
+                    "fclass",
+                    "name",
+                    "typecode",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "GVI",
+                    "NOI",
+                    "WS归一化",
+                    "绿视率原始值",
+                    "道路噪声原始值",
+                    "Shape_Length"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "ShaHeKou query",
+            "type": "object"
+          }
+        ]
+      },
+      "name": "queryMapFeatures",
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "exceededTransferLimit": {
+            "type": "boolean"
+          },
+          "features": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "attributes": {
+                  "type": "object"
+                },
+                "geometry": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": true,
+                      "properties": {
+                        "spatialReference": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "wkid": {
+                              "const": 4326
+                            }
+                          },
+                          "required": [
+                            "wkid"
+                          ],
+                          "type": "object"
+                        },
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "spatialReference"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": true,
+                      "properties": {
+                        "paths": {
+                          "items": {
+                            "items": {
+                              "maxItems": 2,
+                              "minItems": 2,
+                              "prefixItems": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "type": "array"
+                            },
+                            "minItems": 2,
+                            "type": "array"
+                          },
+                          "minItems": 1,
+                          "type": "array"
+                        },
+                        "spatialReference": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "wkid": {
+                              "const": 4326
+                            }
+                          },
+                          "required": [
+                            "wkid"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "paths",
+                        "spatialReference"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "attributes",
+                "geometry"
+              ],
+              "type": "object"
+            },
+            "maxItems": 200,
+            "type": "array"
+          },
+          "geometryType": {
+            "enum": [
+              "point",
+              "polyline"
+            ],
+            "type": "string"
+          },
+          "layerId": {
+            "maximum": 5,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "layerName": {
+            "enum": [
+              "shahekou_1",
+              "xigang_1",
+              "zhongshan_1",
+              "ZhongShan",
+              "XiGang",
+              "ShaHeKou"
+            ],
+            "type": "string"
+          },
+          "total": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "layerId",
+          "layerName",
+          "geometryType",
+          "total",
+          "exceededTransferLimit",
+          "features"
+        ],
+        "type": "object"
+      },
+      "requiresConfirmation": false,
+      "sideEffect": false,
+      "timeoutMs": 120000
+    },
+    {
+      "description": "查询 0 至 2 号住宅点图层。新步行是点要素步行评分，不等同于道路 WS。",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "description": "沙河口区住宅点图层 shahekou_1",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "adname",
+                          "description": "行政区"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "房价",
+                          "description": "房价"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "覆盖度评分",
+                          "description": "覆盖度评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "归一化总分",
+                          "description": "综合评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 0
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID",
+                    "Shape",
+                    "id",
+                    "name",
+                    "address",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "pname",
+                    "cityname",
+                    "adname",
+                    "大类",
+                    "中类",
+                    "小类",
+                    "餐饮密度",
+                    "风景密度",
+                    "科教密度",
+                    "购物密度",
+                    "金融密度",
+                    "公共密度",
+                    "覆盖度",
+                    "覆盖度评分",
+                    "新步行",
+                    "总原始分",
+                    "归一化总分",
+                    "房价",
+                    "交通密度"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "shahekou_1 query",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "西岗区住宅点图层 xigang_1",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "adname",
+                          "description": "行政区"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "房价",
+                          "description": "房价"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "覆盖度评分",
+                          "description": "覆盖度评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "归一化总分",
+                          "description": "综合评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 1
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID",
+                    "Shape",
+                    "id",
+                    "name",
+                    "address",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "pname",
+                    "cityname",
+                    "adname",
+                    "大类",
+                    "中类",
+                    "小类",
+                    "餐饮密度",
+                    "风景密度",
+                    "科教密度",
+                    "购物密度",
+                    "金融密度",
+                    "公共密度",
+                    "覆盖度",
+                    "覆盖度评分",
+                    "新步行",
+                    "总原始分",
+                    "归一化总分",
+                    "房价"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "xigang_1 query",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "中山区住宅点图层 zhongshan_1",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "adname",
+                          "description": "行政区"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "房价",
+                          "description": "房价"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "覆盖度评分",
+                          "description": "覆盖度评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "归一化总分",
+                          "description": "综合评分"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 2
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID",
+                    "Shape",
+                    "id",
+                    "name",
+                    "address",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "pname",
+                    "cityname",
+                    "adname",
+                    "大类",
+                    "中类",
+                    "小类",
+                    "餐饮密度",
+                    "风景密度",
+                    "科教密度",
+                    "购物密度",
+                    "金融密度",
+                    "公共密度",
+                    "覆盖度",
+                    "覆盖度评分",
+                    "新步行",
+                    "总原始分",
+                    "归一化总分",
+                    "房价"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "zhongshan_1 query",
+            "type": "object"
+          }
+        ]
+      },
+      "name": "queryMapPoints",
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "exceededTransferLimit": {
+            "type": "boolean"
+          },
+          "features": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "attributes": {
+                  "type": "object"
+                },
+                "geometry": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": true,
+                      "properties": {
+                        "spatialReference": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "wkid": {
+                              "const": 4326
+                            }
+                          },
+                          "required": [
+                            "wkid"
+                          ],
+                          "type": "object"
+                        },
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "spatialReference"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": true,
+                      "properties": {
+                        "paths": {
+                          "items": {
+                            "items": {
+                              "maxItems": 2,
+                              "minItems": 2,
+                              "prefixItems": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "type": "array"
+                            },
+                            "minItems": 2,
+                            "type": "array"
+                          },
+                          "minItems": 1,
+                          "type": "array"
+                        },
+                        "spatialReference": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "wkid": {
+                              "const": 4326
+                            }
+                          },
+                          "required": [
+                            "wkid"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "paths",
+                        "spatialReference"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "attributes",
+                "geometry"
+              ],
+              "type": "object"
+            },
+            "maxItems": 200,
+            "type": "array"
+          },
+          "geometryType": {
+            "enum": [
+              "point",
+              "polyline"
+            ],
+            "type": "string"
+          },
+          "layerId": {
+            "maximum": 5,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "layerName": {
+            "enum": [
+              "shahekou_1",
+              "xigang_1",
+              "zhongshan_1",
+              "ZhongShan",
+              "XiGang",
+              "ShaHeKou"
+            ],
+            "type": "string"
+          },
+          "total": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "layerId",
+          "layerName",
+          "geometryType",
+          "total",
+          "exceededTransferLimit",
+          "features"
+        ],
+        "type": "object"
+      },
+      "requiresConfirmation": false,
+      "sideEffect": false,
+      "timeoutMs": 120000
+    },
+    {
+      "description": "查询 3 至 5 号道路图层。GVI/NOI 是等级字段，vegetation/noise 是原始分，WS归一化是 0-100 的道路步行指数。",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "description": "中山区道路线图层 ZhongShan",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "GVI",
+                          "description": "绿视率等级：0=高，1=较高，3=中等，5=低"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "NOI",
+                          "description": "道路噪声等级：0=低，1.25=较低，2.5=中，3.75=较高，5=高"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "WS归一化",
+                          "description": "步行指数（0-100）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "绿视率原始值",
+                          "description": "绿视率原始分（vegetation）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "道路噪声原始值",
+                          "description": "道路噪声原始分（noise）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "Shape_Length",
+                          "description": "道路长度"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "道路名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 3
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID_12",
+                    "OBJECTID",
+                    "Shape",
+                    "fclass",
+                    "name",
+                    "typecode",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "GVI",
+                    "NOI",
+                    "WS归一化",
+                    "绿视率原始值",
+                    "道路噪声原始值",
+                    "Shape_Length"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "ZhongShan query",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "西岗区道路线图层 XiGang",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "GVI",
+                          "description": "绿视率等级：0=高，1=较高，3=中等，5=低"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "NOI",
+                          "description": "道路噪声等级：0=低，1.25=较低，2.5=中，3.75=较高，5=高"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "WS归一化",
+                          "description": "步行指数（0-100）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "绿视率原始值",
+                          "description": "绿视率原始分（vegetation）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "道路噪声原始值",
+                          "description": "道路噪声原始分（noise）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "Shape_Length",
+                          "description": "道路长度"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "道路名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 4
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID_12",
+                    "Shape",
+                    "fclass",
+                    "name",
+                    "typecode",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "GVI",
+                    "NOI",
+                    "WS归一化",
+                    "绿视率原始值",
+                    "道路噪声原始值",
+                    "Shape_Length"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "XiGang query",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "description": "沙河口区道路线图层 ShaHeKou",
+            "properties": {
+              "filters": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "GVI",
+                          "description": "绿视率等级：0=高，1=较高，3=中等，5=低"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "NOI",
+                          "description": "道路噪声等级：0=低，1.25=较低，2.5=中，3.75=较高，5=高"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "WS归一化",
+                          "description": "步行指数（0-100）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "绿视率原始值",
+                          "description": "绿视率原始分（vegetation）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "道路噪声原始值",
+                          "description": "道路噪声原始分（noise）"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "Shape_Length",
+                          "description": "道路长度"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            ">=",
+                            "<=",
+                            ">",
+                            "<"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "field": {
+                          "const": "name",
+                          "description": "道路名称"
+                        },
+                        "operator": {
+                          "enum": [
+                            "=",
+                            "like"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {}
+                      },
+                      "required": [
+                        "field",
+                        "operator"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              "layerId": {
+                "const": 5
+              },
+              "outFields": {
+                "items": {
+                  "enum": [
+                    "OBJECTID_12",
+                    "Shape",
+                    "fclass",
+                    "name",
+                    "typecode",
+                    "wgs84_x",
+                    "wgs84_y",
+                    "GVI",
+                    "NOI",
+                    "WS归一化",
+                    "绿视率原始值",
+                    "道路噪声原始值",
+                    "Shape_Length"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "resultOffset": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "resultRecordCount": {
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "returnCount": {
+                "type": "boolean"
+              },
+              "returnGeometry": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "layerId",
+              "filters",
+              "returnGeometry",
+              "resultRecordCount"
+            ],
+            "title": "ShaHeKou query",
+            "type": "object"
+          }
+        ]
+      },
+      "name": "queryMapLines",
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "exceededTransferLimit": {
+            "type": "boolean"
+          },
+          "features": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "attributes": {
+                  "type": "object"
+                },
+                "geometry": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": true,
+                      "properties": {
+                        "spatialReference": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "wkid": {
+                              "const": 4326
+                            }
+                          },
+                          "required": [
+                            "wkid"
+                          ],
+                          "type": "object"
+                        },
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "spatialReference"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": true,
+                      "properties": {
+                        "paths": {
+                          "items": {
+                            "items": {
+                              "maxItems": 2,
+                              "minItems": 2,
+                              "prefixItems": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "type": "array"
+                            },
+                            "minItems": 2,
+                            "type": "array"
+                          },
+                          "minItems": 1,
+                          "type": "array"
+                        },
+                        "spatialReference": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "wkid": {
+                              "const": 4326
+                            }
+                          },
+                          "required": [
+                            "wkid"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "paths",
+                        "spatialReference"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "attributes",
+                "geometry"
+              ],
+              "type": "object"
+            },
+            "maxItems": 200,
+            "type": "array"
+          },
+          "geometryType": {
+            "enum": [
+              "point",
+              "polyline"
+            ],
+            "type": "string"
+          },
+          "layerId": {
+            "maximum": 5,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "layerName": {
+            "enum": [
+              "shahekou_1",
+              "xigang_1",
+              "zhongshan_1",
+              "ZhongShan",
+              "XiGang",
+              "ShaHeKou"
+            ],
+            "type": "string"
+          },
+          "total": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "layerId",
+          "layerName",
+          "geometryType",
+          "total",
+          "exceededTransferLimit",
+          "features"
+        ],
+        "type": "object"
+      },
+      "requiresConfirmation": false,
+      "sideEffect": false,
+      "timeoutMs": 120000
+    },
+    {
+      "description": "按住宅硬约束、便利度软偏好和道路 WS归一化空间证据执行确定性推荐或道路缓冲区筛选。便利度固定使用归一化总分，WS归一化仅来自道路图层。",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "display": {
+            "additionalProperties": false,
+            "properties": {
+              "includeBuffers": {
+                "type": "boolean"
+              },
+              "includeRoads": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "includeRoads",
+              "includeBuffers"
+            ],
+            "type": "object"
+          },
+          "districts": {
+            "items": {
+              "enum": [
+                "中山区",
+                "西岗区",
+                "沙河口区"
+              ],
+              "type": "string"
+            },
+            "maxItems": 3,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "hardFilters": {
+            "additionalProperties": false,
+            "properties": {
+              "priceMax": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "priceMin": {
+                "minimum": 0,
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "limit": {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "mode": {
+            "enum": [
+              "RANK",
+              "BUFFER_FILTER"
+            ],
+            "type": "string"
+          },
+          "preferences": {
+            "additionalProperties": false,
+            "properties": {
+              "convenience": {
+                "additionalProperties": false,
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "level": {
+                    "enum": [
+                      "PREFER_HIGH",
+                      "HIGH",
+                      "VERY_HIGH"
+                    ],
+                    "type": "string"
+                  },
+                  "weight": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "level"
+                ],
+                "type": "object"
+              },
+              "price": {
+                "additionalProperties": false,
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "level": {
+                    "const": "PREFER_LOW"
+                  },
+                  "weight": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "level",
+                  "weight"
+                ],
+                "type": "object"
+              },
+              "roadWalkability": {
+                "additionalProperties": false,
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "level": {
+                    "enum": [
+                      "PREFER_HIGH",
+                      "HIGH",
+                      "VERY_HIGH"
+                    ],
+                    "type": "string"
+                  },
+                  "weight": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "level"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "price",
+              "convenience",
+              "roadWalkability"
+            ],
+            "type": "object"
+          },
+          "roadCriteria": {
+            "additionalProperties": false,
+            "properties": {
+              "gviMin": {
+                "description": "道路绿视率原始分 vegetation 最小值（0-1），不使用 GVI 等级值",
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              },
+              "noiMax": {
+                "description": "道路噪声原始分 noise 最大值（0-100），不使用 NOI 等级值",
+                "maximum": 100,
+                "minimum": 0,
+                "type": "number"
+              },
+              "wsMin": {
+                "description": "道路 WS归一化 最小值（0-100）",
+                "maximum": 100,
+                "minimum": 0,
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "spatial": {
+            "additionalProperties": false,
+            "properties": {
+              "bufferMeters": {
+                "maximum": 2000,
+                "minimum": 20,
+                "type": "integer"
+              },
+              "relation": {
+                "const": "WITHIN_ROAD_BUFFER"
+              }
+            },
+            "required": [
+              "relation"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "mode",
+          "districts",
+          "hardFilters",
+          "preferences",
+          "spatial",
+          "display",
+          "limit"
+        ],
+        "type": "object"
+      },
+      "name": "searchHousingCandidates",
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "bufferOverlays": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "attributes": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bufferMeters": {
+                      "maximum": 2000,
+                      "minimum": 20,
+                      "type": "integer"
+                    },
+                    "sourceRoadCount": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "sourceRoadIdsTruncated": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "bufferMeters",
+                    "sourceRoadCount",
+                    "sourceRoadIdsTruncated"
+                  ],
+                  "type": "object"
+                },
+                "geometry": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "rings": {
+                      "items": {
+                        "items": {
+                          "maxItems": 2,
+                          "minItems": 2,
+                          "prefixItems": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ],
+                          "type": "array"
+                        },
+                        "minItems": 4,
+                        "type": "array"
+                      },
+                      "minItems": 1,
+                      "type": "array"
+                    },
+                    "spatialReference": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "wkid": {
+                          "const": 4326
+                        }
+                      },
+                      "required": [
+                        "wkid"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "rings",
+                    "spatialReference"
+                  ],
+                  "type": "object"
+                },
+                "geometryType": {
+                  "const": "polygon"
+                },
+                "kind": {
+                  "const": "ROAD_BUFFER"
+                },
+                "overlayId": {
+                  "maxLength": 128,
+                  "pattern": "^buf-[A-Za-z0-9._:-]+$",
+                  "type": "string"
+                },
+                "sourceRoadIds": {
+                  "items": {
+                    "pattern": "^[3-5]:.+",
+                    "type": "string"
+                  },
+                  "maxItems": 20,
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "spatialReference": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "wkid": {
+                      "const": 4326
+                    }
+                  },
+                  "required": [
+                    "wkid"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "overlayId",
+                "kind",
+                "geometryType",
+                "spatialReference",
+                "sourceRoadIds",
+                "attributes",
+                "geometry"
+              ],
+              "type": "object"
+            },
+            "maxItems": 20,
+            "type": "array"
+          },
+          "dataVersion": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "housingCandidates": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "attributes": {
+                  "type": "object"
+                },
+                "geometry": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "spatialReference": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "wkid": {
+                          "const": 4326
+                        }
+                      },
+                      "required": [
+                        "wkid"
+                      ],
+                      "type": "object"
+                    },
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y",
+                    "spatialReference"
+                  ],
+                  "type": "object"
+                },
+                "housingId": {
+                  "pattern": "^[0-2]:.+",
+                  "type": "string"
+                },
+                "layerId": {
+                  "maximum": 2,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "reasons": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "scores": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "conveniencePercentile": {
+                      "oneOf": [
+                        {
+                          "maximum": 100,
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "nearbyRoadWsPercentile": {
+                      "oneOf": [
+                        {
+                          "maximum": 100,
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "nearbyRoadWsRaw": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "priceAffordabilityPercentile": {
+                      "oneOf": [
+                        {
+                          "maximum": 100,
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "recommendationScore": {
+                      "oneOf": [
+                        {
+                          "maximum": 100,
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "weights": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "convenience": {
+                          "maximum": 1,
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        "price": {
+                          "maximum": 1,
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        "roadWalkability": {
+                          "maximum": 1,
+                          "minimum": 0,
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "price",
+                        "convenience",
+                        "roadWalkability"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "priceAffordabilityPercentile",
+                    "conveniencePercentile",
+                    "nearbyRoadWsRaw",
+                    "nearbyRoadWsPercentile",
+                    "recommendationScore",
+                    "weights"
+                  ],
+                  "type": "object"
+                },
+                "spatialEvidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bufferMeters": {
+                      "maximum": 2000,
+                      "minimum": 20,
+                      "type": "integer"
+                    },
+                    "contributingRoadIds": {
+                      "items": {
+                        "pattern": "^[3-5]:.+",
+                        "type": "string"
+                      },
+                      "maxItems": 50,
+                      "type": "array",
+                      "uniqueItems": true
+                    },
+                    "nearbyRoadCount": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "nearestRoadDistanceMeters": {
+                      "oneOf": [
+                        {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "bufferMeters",
+                    "nearbyRoadCount",
+                    "nearestRoadDistanceMeters",
+                    "contributingRoadIds"
+                  ],
+                  "type": "object"
+                },
+                "warnings": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "housingId",
+                "layerId",
+                "attributes",
+                "geometry",
+                "scores",
+                "spatialEvidence",
+                "reasons",
+                "warnings"
+              ],
+              "type": "object"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "mode": {
+            "enum": [
+              "RANK",
+              "BUFFER_FILTER"
+            ],
+            "type": "string"
+          },
+          "policyVersion": {
+            "const": "housing-search-policy-2026-08-21.1",
+            "type": "string"
+          },
+          "resolvedCriteria": {
+            "additionalProperties": false,
+            "properties": {
+              "bufferMeters": {
+                "maximum": 2000,
+                "minimum": 20,
+                "type": "integer"
+              },
+              "defaultsApplied": {
+                "items": {
+                  "enum": [
+                    "BUFFER_METERS",
+                    "PREFERENCE_WEIGHTS"
+                  ],
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "priceMax": {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "priceMin": {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "relaxationApplied": {
+                "const": false
+              },
+              "roadWsThreshold": {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "roadWsThresholdPercentile": {
+                "oneOf": [
+                  {
+                    "maximum": 100,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "priceMin",
+              "priceMax",
+              "bufferMeters",
+              "roadWsThreshold",
+              "roadWsThresholdPercentile",
+              "defaultsApplied",
+              "relaxationApplied"
+            ],
+            "type": "object"
+          },
+          "roadFeatures": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "attributes": {
+                  "type": "object"
+                },
+                "geometry": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "paths": {
+                      "items": {
+                        "items": {
+                          "maxItems": 2,
+                          "minItems": 2,
+                          "prefixItems": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ],
+                          "type": "array"
+                        },
+                        "minItems": 2,
+                        "type": "array"
+                      },
+                      "minItems": 1,
+                      "type": "array"
+                    },
+                    "spatialReference": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "wkid": {
+                          "const": 4326
+                        }
+                      },
+                      "required": [
+                        "wkid"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "paths",
+                    "spatialReference"
+                  ],
+                  "type": "object"
+                },
+                "layerId": {
+                  "maximum": 5,
+                  "minimum": 3,
+                  "type": "integer"
+                },
+                "roadId": {
+                  "pattern": "^[3-5]:.+",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "roadId",
+                "layerId",
+                "attributes",
+                "geometry"
+              ],
+              "type": "object"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "statisticsScope": {
+            "additionalProperties": false,
+            "properties": {
+              "districts": {
+                "items": {
+                  "enum": [
+                    "中山区",
+                    "西岗区",
+                    "沙河口区"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 3,
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "type": {
+                "enum": [
+                  "SUPPORTED_REGION",
+                  "DISTRICT"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "districts"
+            ],
+            "type": "object"
+          },
+          "summary": {
+            "additionalProperties": false,
+            "properties": {
+              "matchedHousingCount": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "matchedRoadCount": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "returnedHousingCount": {
+                "maximum": 50,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "returnedRoadCount": {
+                "maximum": 50,
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "matchedHousingCount",
+              "returnedHousingCount",
+              "matchedRoadCount",
+              "returnedRoadCount"
+            ],
+            "type": "object"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "policyVersion",
+          "dataVersion",
+          "mode",
+          "statisticsScope",
+          "resolvedCriteria",
+          "summary",
+          "housingCandidates",
+          "roadFeatures",
+          "bufferOverlays",
+          "warnings"
+        ],
+        "type": "object"
+      },
+      "requiresConfirmation": false,
+      "sideEffect": false,
+      "timeoutMs": 120000
+    }
+  ],
+  "version": "2026-08-21.1"
+}

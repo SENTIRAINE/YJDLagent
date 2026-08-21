@@ -1,23 +1,23 @@
 {
-  "schemaVersion": 1,
-  "catalogVersion": "2026-07-29.1",
-  "housingPolicyVersion": "housing-search-policy-2026-07-29.1",
-  "geoSceneSchemaSha256": "cfdc97ba1e272a96602823280e137094ba2d4708cbcf5a7a2cbe3c04ca443c71",
-  "spatialIndexVersion": null,
-  "source": "deterministic-contract",
-  "generatedAt": null,
+  "catalogVersion": "2026-08-21.1",
   "files": {
-    "catalog": "../../../docs/docs/examples/agent-tool-catalog-2026-07-29.1.json",
-    "toolFixtures": "tool-fixtures.json",
     "agentSseFixtures": "agent-sse-fixtures.json",
-    "liveToolFixtures": "live-tool-fixtures.json",
+    "catalog": "../../../docs/docs/examples/agent-tool-catalog-2026-08-21.1.json",
     "liveAgentSseFixtures": "live-agent-sse-fixtures.json",
-    "performanceBaseline": "performance-baseline.json"
+    "liveToolFixtures": "live-tool-fixtures.json",
+    "performanceBaseline": "performance-baseline.json",
+    "toolFixtures": "tool-fixtures.json"
   },
+  "generatedAt": "2026-08-21T10:35:19.872899+00:00",
+  "geoSceneSchemaSha256": "02eb5defc547d96bf0edc31f84dcd93f442a9977cbce5c6afeb82a62b7ffe6d9",
+  "housingPolicyVersion": "housing-search-policy-2026-08-21.1",
   "regenerationRequiredWhen": [
     "catalogVersion",
     "housingPolicyVersion",
     "geoSceneSchemaSha256",
     "spatialIndexVersion"
-  ]
+  ],
+  "schemaVersion": 1,
+  "source": "controlled-live-smoke",
+  "spatialIndexVersion": "geoscene-snapshot-2026-08-21T10:15:58Z"
 }

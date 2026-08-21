@@ -4,10 +4,12 @@
 [agent-api-v1.openapi.yaml](./agent-api-v1.openapi.yaml) 为唯一机器契约；Tool 参数以运行时
 `GET /internal/agent-tools/catalog` 返回的 Catalog 为准。本文不复制完整 JSON Schema，避免出现两份契约。
 
+当前实现状态、验证证据和已知限制见 [当前项目报告](../current-project-report-2026-08-21.md)。
+
 ## 1. 版本与职责边界
 
 - SSE `schemaVersion` 固定为 `1.1`。
-- Agent Tool Catalog 版本必须严格等于 `2026-07-29.1`。
+- Agent Tool Catalog 版本必须严格等于 `2026-08-21.1`。
 - LangGraph 负责理解自然语言、生成合约参数、调用 Tool 和组装 SSE。
 - Spring Boot Tool 负责便利度、道路 WS、百分位、距离、缓冲区和推荐分数计算。
 - LangGraph 不下载图层重算空间结果，也不人为维护便利度或步行指数的绝对分数分级。
@@ -86,6 +88,14 @@
 
 `GET /readyz` 每次请求都会重新读取 Tool Catalog 和 Tool health。只有顶层 health 与 `housingSnapshot.status` 均为 `READY`，且 Catalog 版本一致时才返回 `200`；`WARMING`、`DEGRADED`、`STALE`、缺失 snapshot 或版本不一致均返回 `503`。响应中的 `runtimePolicy` 是当前进程实际使用的 Run/Tool 超时，发布验收会校验 Tool 超时大于 120 秒且小于 Run 超时。
 
+常见 readiness 原因：
+
+| reason | 含义与检查方向 |
+| --- | --- |
+| `TOOL_EXECUTION_FAILED` | Spring Tool health/Catalog 请求失败；检查 Base URL、服务 Token、Spring 状态和网络 |
+| `TOOL_CATALOG_VERSION_MISMATCH` | Catalog 版本不是 `2026-08-21.1`；两端必须同步升级 |
+| `DATA_NOT_READY` | housing snapshot 未达到 `READY`；等待或修复 Spring 数据装载 |
+
 ## 3. SSE 约束
 
 每个事件包含 `id`、`event` 和单行 JSON `data`。`data` 必须满足：
@@ -110,6 +120,16 @@ run.completed
 ```
 
 完整示例见 [agent-sse-housing-buffer.txt](./examples/agent-sse-housing-buffer.txt)。
+
+### 3.1 RAG 路由与降级语义
+
+- 定义、含义、公式、口径和计算方法类问题在会话业务状态继承前确定性进入 `RAG_QA`。
+- 纯知识问题不会继承上一轮住宅行政区、价格、偏好或地图结果。
+- 每个新 turn 清空上一轮检索、Tool、地图和回答等执行产物，避免 Checkpoint 交叉污染。
+- 包含筛选、查找、显示、定位、推荐等明确地图动作时，不应用纯知识路由覆盖业务意图。
+- 模型服务返回 HTTP `429` 时最多尝试 3 次；检索完成但答案生成持续失败时，终态仍返回文档、章节、页码和 citation，并包含 `ANSWER_GENERATION_DEGRADED` warning。
+
+直接检索接口为 `POST /api/v1/rag/search`。该接口适合检索诊断，不替代完整 Run 的路由、回答、配额与事件语义。
 
 ## 4. Spring Boot Agent Tool 接口
 
@@ -199,7 +219,7 @@ Tool 调用额外携带 `X-Run-Id`。每个逻辑调用生成一个 UUID `toolCa
 - `TOOL_CALL_CONFLICT`
 
 `METRIC_STATISTICS_UNAVAILABLE` 和 `DATA_VERSION_MISMATCH` 可以使用同一逻辑调用稍后重试，但不得降级为
-无百分位或无空间约束查询。Catalog 版本不是 `2026-07-29.1` 时，LangGraph readiness 返回
+无百分位或无空间约束查询。Catalog 版本不是 `2026-08-21.1` 时，LangGraph readiness 返回
 `TOOL_CATALOG_VERSION_MISMATCH`，并阻止使用不匹配的 Schema。
 
 ## 8. 验证命令

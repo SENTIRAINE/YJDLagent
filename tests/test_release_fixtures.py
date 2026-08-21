@@ -62,6 +62,32 @@ def test_release_manifest_tracks_catalog_and_geoscene_schema() -> None:
     }
 
 
+def test_catalog_freezes_road_raw_level_and_null_semantics() -> None:
+    catalog = load_json(catalog_path())
+    assert catalog["version"] == "2026-08-21.1"
+    line_tool = next(tool for tool in catalog["tools"] if tool["name"] == "queryMapLines")
+    for branch in line_tool["inputSchema"]["oneOf"]:
+        filters = {
+            option["properties"]["field"]["const"]: option["properties"]["field"][
+                "description"
+            ]
+            for option in branch["properties"]["filters"]["items"]["oneOf"]
+        }
+        assert "0=高，1=较高，3=中等，5=低" in filters["GVI"]
+        assert "0=低，1.25=较低，2.5=中，3.75=较高，5=高" in filters["NOI"]
+        assert filters["WS归一化"] == "步行指数（0-100）"
+        assert filters["绿视率原始值"] == "绿视率原始分（vegetation）"
+        assert filters["道路噪声原始值"] == "道路噪声原始分（noise）"
+
+    housing_tool = next(
+        tool for tool in catalog["tools"] if tool["name"] == "searchHousingCandidates"
+    )
+    criteria = housing_tool["inputSchema"]["properties"]["roadCriteria"]["properties"]
+    assert (criteria["wsMin"]["minimum"], criteria["wsMin"]["maximum"]) == (0, 100)
+    assert (criteria["gviMin"]["minimum"], criteria["gviMin"]["maximum"]) == (0, 1)
+    assert (criteria["noiMax"]["minimum"], criteria["noiMax"]["maximum"]) == (0, 100)
+
+
 def test_a01_a11_tool_and_sse_fixtures_are_complete_and_contract_valid() -> None:
     tool_fixture = load_json(FIXTURE_ROOT / "tool-fixtures.json")
     sse_fixture = load_json(FIXTURE_ROOT / "agent-sse-fixtures.json")
@@ -130,7 +156,11 @@ def housing_execution() -> dict[str, object]:
                 {
                     "roadId": "3:1",
                     "layerId": 3,
-                    "attributes": {"WS": 0.8},
+                    "attributes": {
+                        "WS归一化": None,
+                        "绿视率原始值": 0.4,
+                        "道路噪声原始值": 55,
+                    },
                     "geometry": {
                         "paths": [[[121.6, 38.9], [121.7, 39.0]]],
                         "spatialReference": {"wkid": 4326},
@@ -288,7 +318,7 @@ def test_live_gate_writes_geoscene_and_percentile_sse_evidence() -> None:
 
         files = runner.write_release_evidence(
             {
-                "catalog": {"version": "2026-07-29.1"},
+                "catalog": {"version": "2026-08-21.1"},
                 "toolHealth": {"housingSnapshot": {"status": "READY"}},
             }
         )

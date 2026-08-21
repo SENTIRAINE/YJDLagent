@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from contextvars import ContextVar
 from typing import Any
@@ -41,11 +42,22 @@ class OpenAICompatibleChatClient:
         headers = SensitiveHeaders({"Authorization": f"Bearer {self.api_key}"})
         error: Exception | None = None
         try:
-            if self._client is not None:
-                response = await self._client.post(self.url, headers=headers, json=body)
-            else:
-                async with httpx.AsyncClient(timeout=self.timeout) as client:
-                    response = await client.post(self.url, headers=headers, json=body)
+            response: httpx.Response | None = None
+            for attempt in range(3):
+                if self._client is not None:
+                    response = await self._client.post(self.url, headers=headers, json=body)
+                else:
+                    async with httpx.AsyncClient(timeout=self.timeout) as client:
+                        response = await client.post(self.url, headers=headers, json=body)
+                if response.status_code != 429 or attempt == 2:
+                    break
+                retry_after = response.headers.get("retry-after")
+                try:
+                    delay = float(retry_after) if retry_after is not None else 0.25 * (2**attempt)
+                except ValueError:
+                    delay = 0.25 * (2**attempt)
+                await asyncio.sleep(max(0.0, min(delay, 2.0)))
+            assert response is not None
             response.raise_for_status()
             data = response.json()
             usage = data.get("usage", {})

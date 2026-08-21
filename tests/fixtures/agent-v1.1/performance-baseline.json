@@ -1,11 +1,17 @@
 {
+  "capturedAt": "2026-08-21T10:35:19.872899+00:00",
+  "p50Ms": 509.5,
+  "p75Ms": 828.0,
+  "p90Ms": 3218.1,
+  "p95Ms": 5114.05,
+  "phaseP95Ms": {
+    "agentNonToolMs": 4984.75,
+    "agentOrchestrationMs": 5065.2,
+    "sseStreamMs": 5095.4,
+    "toolMs": 173.4,
+    "transportAndSseMs": 79.55
+  },
+  "sampleCount": 8,
   "schemaVersion": 1,
-  "source": "requires-controlled-live-smoke",
-  "sampleCount": 0,
-  "p50Ms": null,
-  "p75Ms": null,
-  "p90Ms": null,
-  "p95Ms": null,
-  "phaseP95Ms": null,
-  "capturedAt": null
+  "source": "controlled-live-smoke"
 }

@@ -11,6 +11,7 @@ from app.agent.capabilities import (
     HOUSING,
     entity_from_text,
     has_housing_preference,
+    is_knowledge_request,
 )
 
 
@@ -70,11 +71,16 @@ def contextualize_with_state(
     query: str, state: ConversationBusinessState
 ) -> tuple[str, list[dict[str, str]]]:
     """Compose an elliptical follow-up from the last committed business query."""
-    if entity_from_text(query) is not None:
+    if is_knowledge_request(query):
         return query, []
     context = state.entity_context
     previous = state.query_context
     has_reference = any(term in query for term in FOLLOWUP_REFERENCE_TERMS)
+    explicit_entity = entity_from_text(query)
+    if explicit_entity is not None and (
+        not has_reference or explicit_entity != context.entity_type
+    ):
+        return query, []
     district_only = any(name in query for name in DISTRICT_NAMES)
     preference_only = has_housing_preference(query)
     if not (has_reference or district_only or preference_only):
@@ -83,15 +89,40 @@ def contextualize_with_state(
         return query, []
 
     clauses: list[str] = []
-    if context.entity_type == "HOUSING":
+    if explicit_entity is None and context.entity_type == "HOUSING":
         clauses.append(f"查询对象为{HOUSING.display_name}")
-    else:
+    elif explicit_entity is None:
         clauses.append("查询对象为道路")
     if not any(name in query for name in DISTRICT_NAMES):
         clauses.extend(context.districts)
+    reuse_other_conditions = any(
+        term in query for term in ("其他条件不变", "其余条件不变")
+    )
+    mentions_price = any(term in query for term in ("房价", "价格", "预算"))
+    mentions_price_min = any(
+        term in query for term in ("不低于", "至少", "最低", "下限", "以上", "元起")
+    )
+    mentions_price_max = any(
+        term in query for term in ("不超过", "不高于", "最高", "上限", "以内", "以下", "之内")
+    )
+    price_min = previous.hard_filters.get("priceMin")
+    if price_min is not None and not mentions_price_min and (
+        reuse_other_conditions or not mentions_price
+    ):
+        clauses.append(
+            f"房价不低于{price_min:g}"
+            if isinstance(price_min, float)
+            else f"房价不低于{price_min}"
+        )
     price_max = previous.hard_filters.get("priceMax")
-    if price_max is not None and "房价" not in query and "价格" not in query and "预算" not in query:
-        clauses.append(f"房价不高于{price_max:g}" if isinstance(price_max, float) else f"房价不高于{price_max}")
+    if price_max is not None and not mentions_price_max and (
+        reuse_other_conditions or not mentions_price
+    ):
+        clauses.append(
+            f"房价不高于{price_max:g}"
+            if isinstance(price_max, float)
+            else f"房价不高于{price_max}"
+        )
     if not preference_only:
         clauses.extend(_preference_clauses(previous.preferences))
     if not clauses:

@@ -5,13 +5,24 @@ from typing import Any, Literal
 
 ConversationKind = Literal["SUMMARY", "SOCIAL"]
 
-SUMMARY_TERMS = ("总结刚才", "总结一下", "我们都说了什么", "回顾刚才", "刚才这段对话")
+SUMMARY_TERMS = (
+    "总结刚才",
+    "总结一下",
+    "我们都说了什么",
+    "回顾刚才",
+    "刚才这段对话",
+    "筛了哪些条件",
+    "用了哪些条件",
+)
+SUMMARY_CONTEXT_TERMS = ("刚才", "之前", "这段对话", "筛选条件", "查询条件")
 SOCIAL_TERMS = ("谢谢", "感谢", "干得不错", "做得不错", "可以了", "辛苦了")
 
 
 def conversation_kind(query: str) -> ConversationKind | None:
     compact = "".join(query.split())
-    if any(term in compact for term in SUMMARY_TERMS):
+    if any(term in compact for term in SUMMARY_TERMS) or (
+        "总结" in compact and any(term in compact for term in SUMMARY_CONTEXT_TERMS)
+    ):
         return "SUMMARY"
     if len(compact) <= 30 and any(term in compact for term in SOCIAL_TERMS):
         return "SOCIAL"
@@ -42,4 +53,3 @@ def conversation_answer(
         if answer:
             lines.append(f"系统结果是：{answer}")
     return "刚才的对话可以概括为：" + "；".join(lines) + "。"
-

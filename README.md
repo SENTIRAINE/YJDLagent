@@ -4,6 +4,8 @@
 
 当前知识库来源为《步行指数知识库——大连市社区生活圈案例》。Spring Boot 负责外部用户入口、认证、权限、业务规则和 GeoScene Tool；本项目负责 Agent 理解与编排、RAG 检索、Tool 参数构造、地图结果映射和 SSE 事件输出。
 
+> 当前文档基线：`2026-08-21`。Agent Tool Catalog 为 `2026-08-21.1`，SSE Schema 为 `1.1`。当前实现、验证证据与剩余事项统一记录在 [当前项目报告](docs/current-project-report-2026-08-21.md)。
+
 ## 功能概览
 
 ### 1. PDF 知识库构建与问答
@@ -27,9 +29,11 @@
 
 主图包含意图路由、知识检索、Catalog 加载、住宅搜索规划、通用地图规划、Tool 执行和答案生成等节点。跟进问题可以继承同一会话的结构化业务状态，但历史消息不能覆盖本轮明确条件或当前 Tool Catalog。
 
+知识定义、含义、公式和计算方式类问题会在业务状态继承前确定性路由到 `RAG_QA`，不会携带上一轮住宅行政区或价格条件。每轮执行还会清空 Checkpoint 中上一轮的检索、Tool、地图和回答临时产物，避免跨轮证据污染。
+
 ### 3. 地图查询与住宅道路联合分析
 
-- 启动和就绪检查时读取 Spring Boot Agent Tool Catalog，并严格校验版本 `2026-07-29.1`。
+- 启动和就绪检查时读取 Spring Boot Agent Tool Catalog，并严格校验版本 `2026-08-21.1`。
 - 使用确定性规则解析房价上限、行政区、便利度偏好、道路步行偏好、缓冲距离和返回数量，减少模型猜测。
 - 住宅与道路联合查询只调用一次 `searchHousingCandidates`，避免在 Agent 中拆分调用或产生 N+1 查询。
 - 将住宅点、贡献道路和道路缓冲区组装成 `map.result`，分别输出 point/polyline resultSet，并原样传递后端 buffer overlay。
@@ -58,6 +62,7 @@
 - 校验 Header 身份与请求体 `user` 身份一致，缺失或不一致时拒绝请求。
 - Tool 调用使用独立服务 Token；模型密钥、数据库路径和底层异常不会写入错误响应。
 - Run 诊断接口记录 Tool 参数及哈希、阶段耗时、重试、错误码和 SSE 连接字节数，便于联调与验收。
+- 模型服务返回 HTTP `429` 时最多尝试 3 次；RAG 已完成但答案模型仍不可用时，服务返回包含文档、章节、页码和 citation 的可审计降级答案。
 
 ## 架构与数据流
 
@@ -120,6 +125,18 @@ $env:SPRING_BOOT_BASE_URL="http://127.0.0.1:8080"
 
 缺少 `LANGGRAPH_SERVICE_TOKEN` 或 `AGENT_TOOL_SERVICE_TOKEN` 时服务会失败关闭，不会降级为无认证调用。
 
+`.env.example` 使用 MongoDB + Mongo Checkpoint 的生产型基线，需要本地 MongoDB 副本集。仅做单机开发时可改为：
+
+```dotenv
+AGENT_STORAGE_BACKEND=sqlite
+AGENT_CHECKPOINT_BACKEND=sqlite
+AGENT_DATABASE_PATH=data/index/agent.sqlite3
+AGENT_CHECKPOINT_DATABASE_PATH=data/index/agent-checkpoints.sqlite3
+AGENT_WORKER_ENABLED=true
+```
+
+两个 SQLite 文件必须使用不同路径。多实例生产部署应使用 MongoDB 事务存储，并配置 `AGENT_REDIS_URL` 承担跨进程限流和配额。
+
 ### 2. 构建知识库
 
 离线基线使用内置 hash embedding，不依赖外部模型：
@@ -167,6 +184,8 @@ Windows 推荐使用根目录脚本：
 start.bat
 ```
 
+注意：`.env.example` 默认设置 `AGENT_WORKER_ENABLED=false`，复制为 `.env` 后，`start.bat` 只启动 API。此时需在另一个终端运行 `start.bat worker`；单进程本地开发也可以把该配置改为 `true`。
+
 默认监听 `0.0.0.0:8000`，也可以指定端口或拆分 API/Worker：
 
 ```bat
@@ -196,6 +215,12 @@ pytest tests/test_live_llm.py -q -s
 $env:RUN_SPRING_E2E="1"
 $env:AGENT_TOOL_SERVICE_TOKEN="..."
 pytest tests/test_live_spring.py -q -s
+```
+
+当前 RAG 回归门禁可单独执行：
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests\test_agent_runtime.py tests\test_llm.py -q
 ```
 
 ## API 入口
@@ -256,6 +281,18 @@ from app.graph import build_rag_graph
 graph = build_rag_graph()
 result = graph.invoke({"query": "步行指数的平均值是多少？", "top_k": 5})
 ```
+
+## 文档导航
+
+| 文档 | 用途 |
+| --- | --- |
+| [当前项目报告](docs/current-project-report-2026-08-21.md) | 当前架构、实现状态、验证证据、已知限制和后续工作 |
+| [LangGraph API v1.1](docs/docs/langgraph-api-v1.1.md) | 面向开发者的 HTTP、SSE、RAG 与 Tool 调用说明 |
+| [OpenAPI v1.1](docs/docs/agent-api-v1.openapi.yaml) | 唯一 HTTP/SSE 机器契约 |
+| [Agent 工程交接](docs/docs/agent-engineer-v1.1-handoff.md) | Planner、Tool、地图结果和发布门禁细节 |
+| [契约样例](docs/docs/examples/README.md) | 当前 Catalog、SSE 与 RAG fixture 索引 |
+| [知识库数据质量](docs/source-data-quality.md) | PDF 可回答边界及原文疑点 |
+| [MongoDB 备份恢复](docs/runbooks/mongo-backup-restore.md) | 生产数据备份、隔离恢复与校验 |
 
 ## 特色亮点
 

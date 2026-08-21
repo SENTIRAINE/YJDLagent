@@ -98,6 +98,34 @@ def test_model_http_failure_keeps_safe_operation_and_provider_request_id() -> No
     asyncio.run(scenario())
 
 
+def test_model_rate_limit_retries_before_succeeding() -> None:
+    calls = 0
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls < 3:
+            return httpx.Response(429, headers={"retry-after": "0"})
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": "ok"}}], "model": "test"},
+        )
+
+    async def scenario() -> None:
+        settings = replace(
+            Settings.from_env(),
+            openai_chat_completions_url="http://llm.test/v1/chat/completions",
+            openai_api_key="test-key",
+        )
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http_client:
+            client = OpenAICompatibleChatClient(settings, client=http_client)
+            result = await client.complete_text(system="system", user="user", operation="answer")
+            assert result == "ok"
+
+    asyncio.run(scenario())
+    assert calls == 3
+
+
 def test_usage_propagates_from_child_tasks_and_isolates_concurrent_runs() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
         return httpx.Response(

@@ -569,7 +569,7 @@ class LiveAcceptance:
                     f"{case_id}: expected P{expected_percentile}, got {actual}"
                 )
             if self.args.mode == "Regenerate":
-                self.regenerated_sse_expectations.setdefault(fixture_case_id, {})[
+                self.regenerated_sse_expectations.setdefault(case_id, {})[
                     "roadPercentile"
                 ] = actual
         warning = expected.get("requiredWarning")
